@@ -12,5 +12,5 @@ set(CMAKE_TOOLCHAIN_FILE "${HOME}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_executable(sGLOH_opencv src/main.cpp)
+add_executable(sGLOH_opencv src/main.cpp src/sGLOH2.cpp src/sGLOH2.hpp)
 target_link_libraries(sGLOH_opencv ${OpenCV_LIBS})
