@@ -27,6 +27,8 @@ public:
     cv::Mat cyclicShift(const cv::Mat &descriptor, int k);
 
     cv::Mat compute_sGLOH_single(const cv::Mat &patch);
+
+    cv::Mat computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP

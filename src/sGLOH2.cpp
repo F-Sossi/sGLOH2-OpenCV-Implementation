@@ -11,38 +11,6 @@ sGLOH2::sGLOH2(int m) : m(m) {
     // Initialize any other member variables as needed
 }
 
-// Compute using SIFT detector
-//void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
-//    // Create a SIFT detector
-//    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
-//
-//    // Detect keypoints
-//    detector->detect(image, keypoints);
-//
-//    // Compute descriptors for each keypoint
-//    for (auto& keypoint : keypoints) {
-//        // Define the size of the patch to extract around each keypoint
-//        int patchSize = 32;  // We  may need to adjust this value
-//
-//        // Calculate the top-left corner of the patch
-//        cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
-//
-//        // Check if the patch is within the image boundaries
-//        if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
-//            continue;  // Skip this keypoint if the patch is not fully within the image
-//        }
-//
-//        // Extract the patch around the keypoint
-//        cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
-//
-//        // Compute sGLOH descriptor for the patch
-//        cv::Mat descriptor = compute_sGLOH(patch);
-//
-//        // Append descriptor to descriptors matrix
-//        descriptors.push_back(descriptor);
-//    }
-//}
-
 // Compute using grid
 void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
     // Define grid size
@@ -80,13 +48,14 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
     }
 }
 
-
-
 cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
     cv::Mat descriptor = cv::Mat::zeros(1, 0, CV_32F);
 
     // Compute the size of the regions
     int region_size = patch.rows / m;
+
+    // Define the bin edges for the histogram
+    std::vector<float> binEdges = {0, 90, 180, 270, 360};  // Fill this with the desired bin edges
 
     // Compute the histogram for each region
     for (int r = 0; r < m; r++) {
@@ -95,13 +64,10 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
             cv::Rect region(r * region_size, d * region_size, region_size, region_size);
 
             // Compute the histogram for the region
-            cv::Mat histogram = computeHistogram(patch(region), m);
-
-            // Reshape the histogram to a single-row matrix.
-            histogram = histogram.reshape(1, 1);
+            cv::Mat histogramMat = computeCustomHistogram(patch(region), binEdges);
 
             // Concatenate the histogram to the descriptor.
-            cv::hconcat(descriptor, histogram, descriptor);
+            cv::hconcat(descriptor, histogramMat, descriptor);
         }
     }
 
@@ -132,9 +98,6 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
 
     return descriptor;
 }
-
-
-
 
 double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
     double min_distance = std::numeric_limits<double>::max();
@@ -167,8 +130,6 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
     return min_distance;
 }
 
-
-
 cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     cv::Mat shifted_descriptor = descriptor.clone();
 
@@ -194,30 +155,31 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     return shifted_descriptor;
 }
 
+cv::Mat sGLOH2::computeCustomHistogram(const cv::Mat& data, const std::vector<float>& binEdges) {
+    std::vector<int> histogram(binEdges.size() - 1, 0);
 
+    for (int i = 0; i < data.rows; ++i) {
+        for (int j = 0; j < data.cols; ++j) {
+            float value = data.at<float>(i, j);
 
-//cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
-//    // Compute the gradient of the region
-//    cv::Mat grad_x, grad_y;
-//    cv::Sobel(region, grad_x, CV_32F, 1, 0, 3);
-//    cv::Sobel(region, grad_y, CV_32F, 0, 1, 3);
-//
-//    // Compute the magnitude and orientation of the gradient
-//    cv::Mat magnitude, orientation;
-//    cv::cartToPolar(grad_x, grad_y, magnitude, orientation, true);
-//
-//    // Compute the histogram of orientations
-//    cv::Mat histogram;
-//    int histSize = m;  // Number of bins
-//    float range[] = { 0, 360 } ;  // Orientation ranges from 0 to 360 degrees
-//    const float* histRange = { range };
-//    cv::calcHist(&orientation, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
-//
-//    // Reshape the histogram to a single-row matrix
-//    histogram = histogram.reshape(1, 1);
-//
-//    return histogram;
-//}
+            // Find the bin that this value belongs to
+            for (size_t bin = 0; bin < binEdges.size() - 1; ++bin) {
+                if (value >= binEdges[bin] && value < binEdges[bin + 1]) {
+                    ++histogram[bin];
+                    break;
+                }
+            }
+        }
+    }
+
+    // Convert the histogram to a cv::Mat and ensure it's a single-row matrix.
+    cv::Mat histogramMat = cv::Mat(histogram).reshape(1, 1);
+
+    // Ensure that the histogramMat has the same data type as the descriptor matrix
+    histogramMat.convertTo(histogramMat, CV_32F);
+
+    return histogramMat;
+}
 
 // Use radians to compute the histogram
 cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
@@ -246,6 +208,84 @@ cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
     return histogram;
 }
 
+////uses old Histogram
+//cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
+//    cv::Mat descriptor = cv::Mat::zeros(1, 0, CV_32F);
+//
+//    // Compute the size of the regions
+//    int region_size = patch.rows / m;
+//
+//    // Compute the histogram for each region
+//    for (int r = 0; r < m; r++) {
+//        for (int d = 0; d < m; d++) {
+//            // Compute the region
+//            cv::Rect region(r * region_size, d * region_size, region_size, region_size);
+//
+//            // Compute the histogram for the region
+//            cv::Mat histogram = computeHistogram(patch(region), m);
+//
+//            // Reshape the histogram to a single-row matrix.
+//            histogram = histogram.reshape(1, 1);
+//
+//            // Concatenate the histogram to the descriptor.
+//            cv::hconcat(descriptor, histogram, descriptor);
+//        }
+//    }
+//
+//    return descriptor;
+//}
 
+//cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
+//    // Compute the gradient of the region
+//    cv::Mat grad_x, grad_y;
+//    cv::Sobel(region, grad_x, CV_32F, 1, 0, 3);
+//    cv::Sobel(region, grad_y, CV_32F, 0, 1, 3);
+//
+//    // Compute the magnitude and orientation of the gradient
+//    cv::Mat magnitude, orientation;
+//    cv::cartToPolar(grad_x, grad_y, magnitude, orientation, true);
+//
+//    // Compute the histogram of orientations
+//    cv::Mat histogram;
+//    int histSize = m;  // Number of bins
+//    float range[] = { 0, 360 } ;  // Orientation ranges from 0 to 360 degrees
+//    const float* histRange = { range };
+//    cv::calcHist(&orientation, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+//
+//    // Reshape the histogram to a single-row matrix
+//    histogram = histogram.reshape(1, 1);
+//
+//    return histogram;
+//}
 
-
+// Compute using SIFT detector
+//void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+//    // Create a SIFT detector
+//    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+//
+//    // Detect keypoints
+//    detector->detect(image, keypoints);
+//
+//    // Compute descriptors for each keypoint
+//    for (auto& keypoint : keypoints) {
+//        // Define the size of the patch to extract around each keypoint
+//        int patchSize = 32;  // We  may need to adjust this value
+//
+//        // Calculate the top-left corner of the patch
+//        cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
+//
+//        // Check if the patch is within the image boundaries
+//        if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
+//            continue;  // Skip this keypoint if the patch is not fully within the image
+//        }
+//
+//        // Extract the patch around the keypoint
+//        cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
+//
+//        // Compute sGLOH descriptor for the patch
+//        cv::Mat descriptor = compute_sGLOH(patch);
+//
+//        // Append descriptor to descriptors matrix
+//        descriptors.push_back(descriptor);
+//    }
+//}
