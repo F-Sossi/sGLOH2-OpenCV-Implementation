@@ -7,7 +7,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-constexpr int PATCH_SIZE = 16;
+constexpr int PATCH_SIZE = 32;
 
 sGLOH2::sGLOH2(int m) : m(m) {
     // Initialize any other member variables as needed
@@ -124,20 +124,55 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     return descriptor;
 }
 
+//double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
+//    // Initialize the minimum distance to the maximum possible value.
+//    double min_distance = std::numeric_limits<double>::max();
+//
+//    // Separate the two descriptors in H_star1 and H_star2 into two halves each.
+//    // H1_1 and H1_2 are the two halves of the first descriptor.
+//    // H2_1 and H2_2 are the two halves of the second descriptor.
+//    cv::Mat H1_1 = H_star1(cv::Range(0, 1), cv::Range(0, H_star1.cols/2));
+//    cv::Mat H1_2 = H_star1(cv::Range(0, 1), cv::Range(H_star1.cols/2, H_star1.cols));
+//    cv::Mat H2_1 = H_star2(cv::Range(0, 1), cv::Range(0, H_star2.cols/2));
+//    cv::Mat H2_2 = H_star2(cv::Range(0, 1), cv::Range(H_star2.cols/2, H_star2.cols));
+//
+//    // Compute the cyclic shifts of H2_1 and H2_2.
+//    // This is done to account for the rotation invariance of the descriptor.
+//    for(int k = 0; k < m; ++k) {
+//        // Shift H2_1 and H2_2 by k positions.
+//        cv::Mat H2_1_shifted = cyclicShift(H2_1, k);
+//        cv::Mat H2_2_shifted = cyclicShift(H2_2, k);
+//
+//        // Concatenate the shifted descriptors to form the complete descriptor.
+//        cv::Mat H2_shifted;
+//        cv::hconcat(H2_1_shifted, H2_2_shifted, H2_shifted);
+//
+//        // Compute the distance between H_star1 and the shifted H2.
+//        // The L2 norm (Euclidean distance) is used as the distance metric.
+//        double distance = cv::norm(H_star1, H2_shifted, cv::NORM_L2);
+//
+//        // Update the minimum distance if the current distance is smaller.
+//        if (distance < min_distance) {
+//            min_distance = distance;
+//        }
+//    }
+//
+//    // Return the minimum distance found.
+//    // This is the distance between H_star1 and the best match among the cyclic shifts of H_star2.
+//    return min_distance;
+//}
 double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
     // Initialize the minimum distance to the maximum possible value.
     double min_distance = std::numeric_limits<double>::max();
+    int best_rotation = 0;
 
     // Separate the two descriptors in H_star1 and H_star2 into two halves each.
-    // H1_1 and H1_2 are the two halves of the first descriptor.
-    // H2_1 and H2_2 are the two halves of the second descriptor.
     cv::Mat H1_1 = H_star1(cv::Range(0, 1), cv::Range(0, H_star1.cols/2));
     cv::Mat H1_2 = H_star1(cv::Range(0, 1), cv::Range(H_star1.cols/2, H_star1.cols));
     cv::Mat H2_1 = H_star2(cv::Range(0, 1), cv::Range(0, H_star2.cols/2));
     cv::Mat H2_2 = H_star2(cv::Range(0, 1), cv::Range(H_star2.cols/2, H_star2.cols));
 
     // Compute the cyclic shifts of H2_1 and H2_2.
-    // This is done to account for the rotation invariance of the descriptor.
     for(int k = 0; k < m; ++k) {
         // Shift H2_1 and H2_2 by k positions.
         cv::Mat H2_1_shifted = cyclicShift(H2_1, k);
@@ -148,19 +183,25 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
         cv::hconcat(H2_1_shifted, H2_2_shifted, H2_shifted);
 
         // Compute the distance between H_star1 and the shifted H2.
-        // The L2 norm (Euclidean distance) is used as the distance metric.
         double distance = cv::norm(H_star1, H2_shifted, cv::NORM_L2);
 
-        // Update the minimum distance if the current distance is smaller.
+        // Update the minimum distance and best rotation if the current distance is smaller.
         if (distance < min_distance) {
             min_distance = distance;
+            best_rotation = k;
         }
     }
 
+    // Reject incongruous correspondences by adding a global constraint on the rotations.
+    int rotation_threshold = 5;  // Adjust this value according to your requirements
+    if (abs(best_rotation - m/2) > rotation_threshold) {
+        return std::numeric_limits<double>::max();
+    }
+
     // Return the minimum distance found.
-    // This is the distance between H_star1 and the best match among the cyclic shifts of H_star2.
     return min_distance;
 }
+
 
 
 cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
