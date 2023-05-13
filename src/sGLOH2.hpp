@@ -29,6 +29,8 @@ public:
     cv::Mat compute_sGLOH_single(const cv::Mat &patch);
 
     cv::Mat computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges);
+
+    cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP

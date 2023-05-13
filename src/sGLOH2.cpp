@@ -7,7 +7,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-constexpr int PATCH_SIZE = 32;
+constexpr int PATCH_SIZE = 16;
 
 sGLOH2::sGLOH2(int m) : m(m) {
     // Initialize any other member variables as needed
@@ -55,37 +55,42 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
 
 cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
     // Initialize the descriptor as a single-row matrix of zeros.
-    // The type of the matrix is CV_32F, which means that it contains 32-bit floating-point numbers.
     cv::Mat descriptor = cv::Mat::zeros(1, 0, CV_32F);
 
-    // Compute the size of the regions into which the patch will be divided.
-    // Each region will be a square with side length equal to the number of rows in the patch divided by m.
-    int region_size = patch.rows / m;
+    // Compute the radius of the circles.
+    int radius = patch.rows / (2 * m);  // The radius is half the patch size divided by m.
 
-    // Compute the histogram for each region.
-    // The patch is divided into m*m regions, and a histogram is computed for each one.
-    for (int r = 0; r < m; r++) {
-        for (int d = 0; d < m; d++) {
-            // Compute the region.
-            // The region is a square with top-left corner at (r*region_size, d*region_size) and side length region_size.
-            cv::Rect region(r * region_size, d * region_size, region_size, region_size);
+    // Compute the histogram for each circular region.
+    for (int i = 0; i < m; i++) {
+        // Compute the inner and outer radius of the region.
+        int inner_radius = i * radius;
+        int outer_radius = (i + 1) * radius;
 
-            // Compute the histogram for the region.
-            // The computeHistogram function computes a histogram of gradient orientations for the region.
-            cv::Mat histogramMat = computeHistogram(patch(region), m);
+        // Initialize a mask for the region.
+        cv::Mat region_mask = cv::Mat::zeros(patch.size(), CV_8U);
 
-            // Concatenate the histogram to the descriptor.
-            // The hconcat function horizontally concatenates the histogram to the descriptor.
-            // This means that the histogram is added as new columns at the end of the descriptor.
-            cv::hconcat(descriptor, histogramMat, descriptor);
+        // Set the pixels within the region to 1.
+        for (int y = 0; y < patch.rows; y++) {
+            for (int x = 0; x < patch.cols; x++) {
+                int dx = x - patch.cols / 2;
+                int dy = y - patch.rows / 2;
+                int distance = std::sqrt(dx * dx + dy * dy);
+                if (distance >= inner_radius && distance < outer_radius) {
+                    region_mask.at<uchar>(y, x) = 1;
+                }
+            }
         }
+
+        // Compute the histogram for the region.
+        cv::Mat histogramMat = computeHistogram(patch, region_mask, m);
+
+        // Concatenate the histogram to the descriptor.
+        cv::hconcat(descriptor, histogramMat, descriptor);
     }
 
     // Return the final descriptor.
-    // The descriptor is a single-row matrix that contains the concatenated histograms of all regions in the patch.
     return descriptor;
 }
-
 
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The compute_sGLOH_single function computes the sGLOH descriptor for a given patch.
@@ -214,42 +219,100 @@ cv::Mat sGLOH2::computeCustomHistogram(const cv::Mat& data, const std::vector<fl
     return histogramMat;
 }
 
-cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
-    // Compute the gradient of the region. The Sobel function is used to find the intensity
-    // gradient of the image. For each pixel, a 2D spatial gradient measurement is computed
-    // for an image, which gives the orientation and magnitude of the gradient at each point.
-    cv::Mat grad_x, grad_y;
-    cv::Sobel(region, grad_x, CV_32F, 1, 0, 3);
-    cv::Sobel(region, grad_y, CV_32F, 0, 1, 3);
 
-    // Compute the magnitude and orientation of the gradient. The cartToPolar function
-    // calculates the magnitude and angle of 2D vectors. The angle is computed in radians
-    // and the magnitude is computed as sqrt(x^2 + y^2).
+cv::Mat sGLOH2::computeHistogram(const cv::Mat& patch, const cv::Mat& mask, int m) {
+    // Compute the gradient of the region.
+    cv::Mat grad_x, grad_y;
+    cv::Sobel(patch, grad_x, CV_32F, 1, 0, 3);
+    cv::Sobel(patch, grad_y, CV_32F, 0, 1, 3);
+
+    // Compute the magnitude and orientation of the gradient.
     cv::Mat magnitude, orientation;
     cv::cartToPolar(grad_x, grad_y, magnitude, orientation, true);
 
-    // Convert orientation from radians to degrees. This is done because the histogram
-    // function expects input in degrees, not radians.
+    // Convert orientation from radians to degrees.
     orientation = orientation * 180.0 / CV_PI;
 
-    // Compute the histogram of orientations. The calcHist function calculates the
-    // histogram of a set of arrays. It can operate on arrays of arbitrary dimensions
-    // and depth. In this case, it's used to compute the histogram of gradient orientations.
+    // Compute the histogram of orientations.
     cv::Mat histogram;
-    int histSize = m;  // Number of bins
-    float range[] = { 0, 360 } ;  // Orientation ranges from 0 to 360 degrees
+    int histSize = m;  // Number of bins.
+    float range[] = { 0, 360 };  // Orientation ranges from 0 to 360 degrees.
     const float* histRange = { range };
-    cv::calcHist(&orientation, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+    cv::calcHist(&orientation, 1, 0, mask, histogram, 1, &histSize, &histRange);
 
-    // Reshape the histogram to a single-row matrix. This is done to ensure that the
-    // histogram can be easily concatenated with other histograms or used in further
-    // computations as a single-row matrix.
+    // Reshape the histogram to a single-row matrix.
     histogram = histogram.reshape(1, 1);
 
     return histogram;
 }
 
+//cv::Mat sGLOH2::computeHistogram(const cv::Mat& region, int m) {
+//    // Compute the gradient of the region. The Sobel function is used to find the intensity
+//    // gradient of the image. For each pixel, a 2D spatial gradient measurement is computed
+//    // for an image, which gives the orientation and magnitude of the gradient at each point.
+//    cv::Mat grad_x, grad_y;
+//    cv::Sobel(region, grad_x, CV_32F, 1, 0, 3);
+//    cv::Sobel(region, grad_y, CV_32F, 0, 1, 3);
+//
+//    // Compute the magnitude and orientation of the gradient. The cartToPolar function
+//    // calculates the magnitude and angle of 2D vectors. The angle is computed in radians
+//    // and the magnitude is computed as sqrt(x^2 + y^2).
+//    cv::Mat magnitude, orientation;
+//    cv::cartToPolar(grad_x, grad_y, magnitude, orientation, true);
+//
+//    // Convert orientation from radians to degrees. This is done because the histogram
+//    // function expects input in degrees, not radians.
+//    orientation = orientation * 180.0 / CV_PI;
+//
+//    // Compute the histogram of orientations. The calcHist function calculates the
+//    // histogram of a set of arrays. It can operate on arrays of arbitrary dimensions
+//    // and depth. In this case, it's used to compute the histogram of gradient orientations.
+//    cv::Mat histogram;
+//    int histSize = m;  // Number of bins
+//    float range[] = { 0, 360 } ;  // Orientation ranges from 0 to 360 degrees
+//    const float* histRange = { range };
+//    cv::calcHist(&orientation, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+//
+//    // Reshape the histogram to a single-row matrix. This is done to ensure that the
+//    // histogram can be easily concatenated with other histograms or used in further
+//    // computations as a single-row matrix.
+//    histogram = histogram.reshape(1, 1);
+//
+//    return histogram;
+//}
 
+//cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
+//    // Initialize the descriptor as a single-row matrix of zeros.
+//    // The type of the matrix is CV_32F, which means that it contains 32-bit floating-point numbers.
+//    cv::Mat descriptor = cv::Mat::zeros(1, 0, CV_32F);
+//
+//    // Compute the size of the regions into which the patch will be divided.
+//    // Each region will be a square with side length equal to the number of rows in the patch divided by m.
+//    int region_size = patch.rows / m;
+//
+//    // Compute the histogram for each region.
+//    // The patch is divided into m*m regions, and a histogram is computed for each one.
+//    for (int r = 0; r < m; r++) {
+//        for (int d = 0; d < m; d++) {
+//            // Compute the region.
+//            // The region is a square with top-left corner at (r*region_size, d*region_size) and side length region_size.
+//            cv::Rect region(r * region_size, d * region_size, region_size, region_size);
+//
+//            // Compute the histogram for the region.
+//            // The computeHistogram function computes a histogram of gradient orientations for the region.
+//            cv::Mat histogramMat = computeHistogram(patch(region), m);
+//
+//            // Concatenate the histogram to the descriptor.
+//            // The hconcat function horizontally concatenates the histogram to the descriptor.
+//            // This means that the histogram is added as new columns at the end of the descriptor.
+//            cv::hconcat(descriptor, histogramMat, descriptor);
+//        }
+//    }
+//
+//    // Return the final descriptor.
+//    // The descriptor is a single-row matrix that contains the concatenated histograms of all regions in the patch.
+//    return descriptor;
+//}
 
 // Uses custom histogram function
 //cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
