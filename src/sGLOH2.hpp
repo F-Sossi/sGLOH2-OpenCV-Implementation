@@ -33,6 +33,8 @@ public:
     cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m);
 
     double cosine_similarity(const cv::Mat &H1, const cv::Mat &H2);
+
+    cv::Mat computeWeightedHistogram(const cv::Mat &orientation, const cv::Mat &magnitude, const cv::Mat &mask, int m);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP
