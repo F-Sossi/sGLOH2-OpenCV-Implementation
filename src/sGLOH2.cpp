@@ -134,7 +134,8 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The rotation is performed around the center of the patch.
     cv::Mat patch_rotated;
     cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
-    double angle = 180.0 / m;
+    double angle = (2 * CV_PI / m) * (180.0 / CV_PI); // angle in degrees
+
     cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle, 1.0);
     cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
 
