@@ -31,6 +31,8 @@ public:
     cv::Mat computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges);
 
     cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m);
+
+    double cosine_similarity(const cv::Mat &H1, const cv::Mat &H2);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP
