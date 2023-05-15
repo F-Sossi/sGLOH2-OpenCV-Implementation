@@ -13,6 +13,7 @@
 class ImageMatcher {
 public:
     ImageMatcher();
+    std::vector<cv::Mat> siftMatch(const cv::Mat& image);
 private:
     std::string image_dir = "../images/";
     std::vector<cv::Mat> imageLibrary;
