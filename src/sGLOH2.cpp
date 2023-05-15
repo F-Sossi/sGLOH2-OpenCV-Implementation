@@ -122,8 +122,6 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
     return descriptor;
 }
 
-
-
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The compute_sGLOH_single function computes the sGLOH descriptor for a given patch.
     // It divides the patch into m*m regions and computes a gradient orientation histogram for each region.
@@ -179,6 +177,8 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
         cv::hconcat(H2_1_shifted, H2_2_shifted, H2_shifted);
 
         // Compute the similarity between H_star1 and the shifted H2.
+        // Not sure which to use
+        //double similarity = cv::norm(H_star1, H2_shifted, cv::NORM_L2);
         double similarity = cosine_similarity(H_star1, H2_shifted);
 
         // Update the maximum similarity and best rotation if the current similarity is larger.
