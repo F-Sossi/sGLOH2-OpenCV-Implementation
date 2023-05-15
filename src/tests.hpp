@@ -10,6 +10,9 @@
 #include <opencv2/features2d.hpp>
 #include "sGLOH2.hpp"
 
+constexpr int M = 4;
+
+// tests using a rotation of the image
 void processImage(const std::string& filename) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
@@ -40,7 +43,7 @@ void processImage(const std::string& filename) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_flipped;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_flipped;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
@@ -74,6 +77,7 @@ void processImage(const std::string& filename) {
     cv::waitKey(0);
 }
 
+// simple test using identical images
 void processImage2(const std::string& imageFileName) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(imageFileName, cv::IMREAD_GRAYSCALE);
@@ -101,7 +105,7 @@ void processImage2(const std::string& imageFileName) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_copy;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_copy;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
@@ -136,6 +140,7 @@ void processImage2(const std::string& imageFileName) {
     cv::waitKey(0);
 }
 
+// test with shifted image (horizontal shift)
 void processImage3(const std::string& imageFileName) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(imageFileName, cv::IMREAD_GRAYSCALE);
@@ -167,7 +172,7 @@ void processImage3(const std::string& imageFileName) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_copy;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_copy;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
@@ -201,9 +206,5 @@ void processImage3(const std::string& imageFileName) {
     cv::imshow("Good Matches sGLOH2", img_matches_sgloh2);
     cv::waitKey(0);
 }
-
-
-
-
 
 #endif //SGLOH_OPENCV_TESTS_HPP

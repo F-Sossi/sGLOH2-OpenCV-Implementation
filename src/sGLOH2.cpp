@@ -7,8 +7,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
+// Only use odd sizes for the patch size (circular region of interest)
 // good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121
-constexpr int PATCH_SIZE = 81;
+constexpr int PATCH_SIZE = 71;
 
 sGLOH2::sGLOH2(int m) : m(m) {
     // Initialize any other member variables as needed
@@ -16,7 +17,8 @@ sGLOH2::sGLOH2(int m) : m(m) {
 
 void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
 
-//    // Convert the image to grayscale if it isn't already
+//    // Did some image preprocessing here it did not have a noticeable effect on the results
+//    // Convert the image to grayscale if it is not already
 //    cv::Mat grayImage;
 //    if (image.channels() == 1) {
 //        grayImage = image;
@@ -59,7 +61,7 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
         cv::Mat descriptor = compute_sGLOH(rotatedPatch);
 
         // Normalize the descriptor.
-        cv::normalize(descriptor, descriptor);
+        cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L2);
 
         descriptors.push_back(descriptor);
     }
@@ -122,8 +124,6 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
     return descriptor;
 }
 
-
-
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The compute_sGLOH_single function computes the sGLOH descriptor for a given patch.
     // It divides the patch into m*m regions and computes a gradient orientation histogram for each region.
@@ -151,7 +151,7 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The final descriptor is then normalized to have a L1 norm of 1.
     // This makes the descriptor invariant to changes in the contrast of the patch.
     // The L1 norm is used because it is less sensitive to outliers than the L2 norm.
-    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L2);
 
     // The final, normalized sGLOH descriptor is then returned.
     return descriptor;
@@ -179,6 +179,8 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
         cv::hconcat(H2_1_shifted, H2_2_shifted, H2_shifted);
 
         // Compute the similarity between H_star1 and the shifted H2.
+        // Not sure which to use
+        //double similarity = cv::norm(H_star1, H2_shifted, cv::NORM_L2);
         double similarity = cosine_similarity(H_star1, H2_shifted);
 
         // Update the maximum similarity and best rotation if the current similarity is larger.
@@ -216,10 +218,6 @@ double sGLOH2::cosine_similarity(const cv::Mat& H1, const cv::Mat& H2) {
     // Return the cosine similarity.
     return cos_sim;
 }
-
-
-
-
 
 cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     // Clone the descriptor to create a new matrix that will be modified and returned.
