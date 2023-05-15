@@ -9,7 +9,7 @@
 
 // Only use odd sizes for the patch size (circular region of interest)
 // good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121
-constexpr int PATCH_SIZE = 121;
+constexpr int PATCH_SIZE = 71;
 
 sGLOH2::sGLOH2(int m) : m(m) {
     // Initialize any other member variables as needed
@@ -61,7 +61,7 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
         cv::Mat descriptor = compute_sGLOH(rotatedPatch);
 
         // Normalize the descriptor.
-        cv::normalize(descriptor, descriptor);
+        cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L2);
 
         descriptors.push_back(descriptor);
     }
@@ -151,7 +151,7 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // The final descriptor is then normalized to have a L1 norm of 1.
     // This makes the descriptor invariant to changes in the contrast of the patch.
     // The L1 norm is used because it is less sensitive to outliers than the L2 norm.
-    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L2);
 
     // The final, normalized sGLOH descriptor is then returned.
     return descriptor;

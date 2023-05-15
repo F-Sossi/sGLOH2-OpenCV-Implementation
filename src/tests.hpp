@@ -10,6 +10,8 @@
 #include <opencv2/features2d.hpp>
 #include "sGLOH2.hpp"
 
+constexpr int M = 4;
+
 // tests using a rotation of the image
 void processImage(const std::string& filename) {
     // Load the image in grayscale
@@ -41,7 +43,7 @@ void processImage(const std::string& filename) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_flipped;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_flipped;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
@@ -103,7 +105,7 @@ void processImage2(const std::string& imageFileName) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_copy;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_copy;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
@@ -170,7 +172,7 @@ void processImage3(const std::string& imageFileName) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
-    sGLOH2 sgloh2(4);
+    sGLOH2 sgloh2(M);
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_copy;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_copy;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
