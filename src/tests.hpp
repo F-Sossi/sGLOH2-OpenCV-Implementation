@@ -10,6 +10,7 @@
 #include <opencv2/features2d.hpp>
 #include "sGLOH2.hpp"
 
+// tests using a rotation of the image
 void processImage(const std::string& filename) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
@@ -74,6 +75,7 @@ void processImage(const std::string& filename) {
     cv::waitKey(0);
 }
 
+// simple test using identical images
 void processImage2(const std::string& imageFileName) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(imageFileName, cv::IMREAD_GRAYSCALE);
@@ -136,6 +138,7 @@ void processImage2(const std::string& imageFileName) {
     cv::waitKey(0);
 }
 
+// test with shifted image (horizontal shift)
 void processImage3(const std::string& imageFileName) {
     // Load the image in grayscale
     cv::Mat image = cv::imread(imageFileName, cv::IMREAD_GRAYSCALE);
@@ -201,9 +204,5 @@ void processImage3(const std::string& imageFileName) {
     cv::imshow("Good Matches sGLOH2", img_matches_sgloh2);
     cv::waitKey(0);
 }
-
-
-
-
 
 #endif //SGLOH_OPENCV_TESTS_HPP
