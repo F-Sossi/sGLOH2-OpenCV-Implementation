@@ -21,8 +21,11 @@ const float RATIO_THRESHOLD = 0.1; //Optimize this
  */
 ImageMatcher::ImageMatcher() {
     // Load all images from the image directory in grey scale
+    // If it is not a .jpg ignore it
     for (const auto & entry : std::filesystem::directory_iterator(image_dir)){
-        imageLibrary.push_back(imread(entry.path().string(), IMREAD_GRAYSCALE));
+        if (entry.path().extension() == ".jpg"){
+            imageLibrary.push_back(imread(entry.path().string(), IMREAD_GRAYSCALE));
+        }
     }
     // Check if images were loaded
     if (imageLibrary.empty()){
@@ -74,15 +77,18 @@ void ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryD
  * Postconditions: The vector will contain the best matches from the image library determined using SIFT detectors.
  */
 std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
+    std::vector<cv::Mat> bestMatches;
+    if(image.empty() || imageLibrary.empty()){
+        return bestMatches;
+    }
+
     //timer for metrics
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
     // Compute keypoints and descriptors for the input image
     std::vector<KeyPoint> keypoints;
     Mat descriptors;
     siftDetector->detectAndCompute(image, noArray(), keypoints, descriptors);
 
-    std::vector<cv::Mat> bestMatches;
     for (int i = 0; i < imageLibrary.size(); i++){ // for each image in the library
         // Display progress
         std::cout << "Processing image " << i+1 << " of " << imageLibrary.size() << std::endl;
