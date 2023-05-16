@@ -8,12 +8,12 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
-#include "ImageMatcher.h"
+#include "imageMatcher.hpp"
 using namespace cv;
 
 
 const double MIN_DIST = 100;
-const float RATIO_THRESHOLD = 0.3f; //Optimize this
+const float RATIO_THRESHOLD = 0.03; //Optimize this
 /**
  * Constructor for the ImageMatcher class.
  * Preconditions: The image directory must be valid at "../images/" and contain only jpg images.
@@ -74,7 +74,7 @@ std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
         if(matches.size() == 0){
             std::cout << "No matches found for image " << i+1 << std::endl;
         }
-        else if((goodMatches.size()/matches.size()) >= RATIO_THRESHOLD){ //Optimize this
+        else if((float(goodMatches.size())/float(matches.size())) >= RATIO_THRESHOLD){ //Optimize this
             bestMatches.push_back(imageLibrary[i]);
         }
         else{
