@@ -17,6 +17,9 @@ public:
 private:
     std::string image_dir = "../images/";
     std::vector<cv::Mat> imageLibrary;
+    cv::Ptr<cv::SIFT> siftDetector = cv::SIFT::create();
+    std::vector<std::vector<cv::KeyPoint>> siftKeypoints; // A little unwieldy, but now we only have to compute keypoints once
+    void scoreMatches(const cv::Mat &queryDescriptors, const cv::Mat &libraryDescriptors, std::vector<cv::Mat> &SbestMatches, int imageIndex);
 };
 
 #endif SGLOH_OPENCV_IMAGESEARCH_HPP
