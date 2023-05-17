@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <vector>
 #include "imageMatcher.hpp"
+#include "sGLOH2.hpp"
 using namespace cv;
 
 
@@ -48,9 +49,6 @@ void ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryD
     matcher.match(queryDescriptors, libraryDescriptors,
                   matches);  //Optimize this (matcher.knnMatch(descriptors1, descriptors2, matches, 2) ?
 
-    // Score the matches to calculate an overall match score for the library image to the input image.
-    //std::sort(matches.begin(), matches.end()); //I don't think this helping anymore
-
     // Iterates through the matches and filters out low quality matches
     std::vector<DMatch> goodMatches;
     for (int i = 0; i < queryDescriptors.rows; i++) {
@@ -70,10 +68,9 @@ void ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryD
 }
 
 /**
- *
  * @param image to be compared to the image library
  * @return a vector of the best matches
- * Preconditions:The image must be a valid jpg image and the image library must be populated.
+ * Preconditions: The image must be a valid jpg image and the image library must be populated.
  * Postconditions: The vector will contain the best matches from the image library determined using SIFT detectors.
  */
 std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
@@ -100,8 +97,50 @@ std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
 
     //print timer
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time elapsed: " << float(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count())/1000 << " ms" << std::endl;
+    std::cout << "Time elapsed: " << float(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count())/1000 << "seconds" << std::endl;
 
     return bestMatches;
 }
 
+/**
+ * @param image to be compared to the image library
+ * @param m is the number of sectors to use for sGLOH2
+ * @return a vector of the best matches
+ * Preconditions: The image must be a valid jpg image and the image library must be populated.
+ * Postconditions: The vector will contain the best matches from the image library determined using sGLOH2 detectors.
+ */
+std::vector<cv::Mat> ImageMatcher::sGLOHMatch(const cv::Mat &image, int m) {
+    // Why does everything pass?
+
+    std::vector<cv::Mat> bestMatches;
+    if (image.empty() || imageLibrary.empty()) {
+        return bestMatches;
+    }
+
+    //timer for metrics
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    // Compute keypoints and descriptors for the input image
+    std::vector<KeyPoint> keypoints;
+    Mat descriptors;
+    sGLOH2 sgloh2(m);
+    sgloh2.compute(image, keypoints, descriptors);
+
+    for (int i = 0; i < imageLibrary.size(); i++) { // for each image in the library
+        // Display progress
+        std::cout << "Processing image " << i + 1 << " of " << imageLibrary.size() << std::endl;
+        // Compute keypoints and descriptors for the library image
+        Mat libraryDescriptors;
+        sgloh2.compute(imageLibrary[i], siftKeypoints[i],
+                       libraryDescriptors);  // Currently using siftKeypoints for sGLOH2 descriptors
+        scoreMatches(descriptors, libraryDescriptors, bestMatches, i);
+    }
+
+    //print timer
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time elapsed: "
+              << float(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()) / 1000 << " ms"
+              << std::endl;
+
+    return bestMatches;
+}

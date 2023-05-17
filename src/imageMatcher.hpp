@@ -14,6 +14,7 @@ class ImageMatcher {
 public:
     ImageMatcher();
     std::vector<cv::Mat> siftMatch(const cv::Mat& image);
+    std::vector<cv::Mat> sGLOHMatch(const cv::Mat &image, int m);
 private:
     std::string image_dir = "../images/";
     std::vector<cv::Mat> imageLibrary;
