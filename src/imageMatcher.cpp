@@ -38,11 +38,11 @@ ImageMatcher::ImageMatcher() {
 /**
  * @param queryDescriptors from the input image
  * @param libraryDescriptors from the library image to check for match
- * @param bestMatches vector of the images that pass the match threshold
+ * @param matchingImages vector of the images that pass the match threshold
  * Preconditions: The descriptors have been calculated for both images.
  * Postconditions: If the library image passes the match threshold, it will be added to the goodMatches vector.
  */
-void ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryDescriptors, std::vector<cv::Mat> &bestMatches, int imageIndex) {
+std::vector<DMatch> ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryDescriptors, std::vector<cv::Mat> &matchingImages, int imageIndex) {
     // Match the descriptors
     BFMatcher matcher(NORM_L2); //Optimize this
     std::vector<DMatch> matches;
@@ -60,11 +60,12 @@ void ImageMatcher::scoreMatches(const Mat &queryDescriptors, const Mat &libraryD
     if (matches.size() == 0) {
         std::cout << "No matches found for image " << imageIndex + 1 << std::endl;
     } else if ((float(goodMatches.size()) / float(matches.size())) >= RATIO_THRESHOLD) { //Optimize this
-        bestMatches.push_back(imageLibrary[imageIndex]);
+        matchingImages.push_back(imageLibrary[imageIndex]);
         std::cout << "Image " << imageIndex + 1 << " passed the match threshold." << std::endl;
     } else {
         std::cout << "Image " << imageIndex + 1 << " failed the match threshold." << std::endl;
     }
+    return goodMatches;
 }
 
 /**
@@ -92,7 +93,11 @@ std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
         // Compute keypoints and descriptors for the library image
         Mat libraryDescriptors;
         siftDetector->detectAndCompute(imageLibrary[i], noArray(), siftKeypoints[i], libraryDescriptors, true);
-        scoreMatches(descriptors, libraryDescriptors, bestMatches, i);
+        std::vector<DMatch> goodMatches = scoreMatches(descriptors, libraryDescriptors, bestMatches, i);
+        Mat output;
+        drawMatches(image, keypoints, imageLibrary[i], siftKeypoints[i], goodMatches, output);
+        imshow("Matches", output);
+        waitKey(0);
     }
 
     //print timer
@@ -124,7 +129,7 @@ std::vector<cv::Mat> ImageMatcher::sGLOHMatch(const cv::Mat &image, int m) {
     std::vector<KeyPoint> keypoints;
     Mat descriptors;
     sGLOH2 sgloh2(m);
-    sgloh2.compute(image, keypoints, descriptors);
+    sgloh2.compute(image, keypoints, descriptors); //This calculates keypoints again so calculating in the constructor doesn't help
 
     for (int i = 0; i < imageLibrary.size(); i++) { // for each image in the library
         // Display progress
@@ -133,7 +138,11 @@ std::vector<cv::Mat> ImageMatcher::sGLOHMatch(const cv::Mat &image, int m) {
         Mat libraryDescriptors;
         sgloh2.compute(imageLibrary[i], siftKeypoints[i],
                        libraryDescriptors);  // Currently using siftKeypoints for sGLOH2 descriptors
-        scoreMatches(descriptors, libraryDescriptors, bestMatches, i);
+        std::vector<DMatch> goodMatches = scoreMatches(descriptors, libraryDescriptors, bestMatches, i);
+        Mat output;
+        drawMatches(image, keypoints, imageLibrary[i], siftKeypoints[i], goodMatches, output);
+        imshow("Matches", output);
+        waitKey(0);
     }
 
     //print timer
