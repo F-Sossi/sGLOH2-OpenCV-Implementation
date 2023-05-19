@@ -8,12 +8,13 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+#include <opencv2/imgproc.hpp>
 #include "imageMatcher.hpp"
 #include "sGLOH2.hpp"
 using namespace cv;
 
 
-const double MIN_DIST = 100;
+const double MIN_DIST = 0.5;  //Somewhere between .5 and .1 probably
 const float RATIO_THRESHOLD = 0.1; //Optimize this
 /**
  * Constructor for the ImageMatcher class.
@@ -52,7 +53,8 @@ std::vector<DMatch> ImageMatcher::scoreMatches(const Mat &queryDescriptors, cons
     // Iterates through the matches and filters out low quality matches
     std::vector<DMatch> goodMatches;
     for (int i = 0; i < queryDescriptors.rows; i++) {
-        if (matches[i].distance <= std::max(2 * MIN_DIST, 0.02)) {  //Optimize this
+        // Distance is the distance between the matched descriptors
+        if (matches[i].distance <= MIN_DIST) {  //Optimize this
             goodMatches.push_back(matches[i]);
         }
     }
@@ -115,7 +117,7 @@ std::vector<cv::Mat> ImageMatcher::siftMatch(const cv::Mat &image) {
  * Postconditions: The vector will contain the best matches from the image library determined using sGLOH2 detectors.
  */
 std::vector<cv::Mat> ImageMatcher::sGLOHMatch(const cv::Mat &image, int m) {
-    // Why does everything pass?
+    // Why does everything pass? How do we determine good matches
 
     std::vector<cv::Mat> bestMatches;
     if (image.empty() || imageLibrary.empty()) {
