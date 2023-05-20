@@ -4,9 +4,13 @@
 
 int main(int argc, char** argv) {
 
-    // tests processImage uses a flipped image processImage2 identical images
+    // processImage uses a flipped image
+    // processImage2 identical images
     // processImage3 uses a shifted image
-    //processImage2("lenna.jpg");
+    // processImage4 uses a rotated image with FLANN matching
+    // processImage5 uses a scaled with BF matching
+    // processImage6 uses a 45 degree rotation with BF matching
+    processImage4("ciri.jpg");
 
 
     //create imagematcher

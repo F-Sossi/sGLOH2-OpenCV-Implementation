@@ -1,5 +1,5 @@
 //
-// Created by Justin on 5/15/2023.
+// Created by Justin on 5/15/2023 hu.
 //
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -23,5 +23,5 @@ private:
     std::vector<cv::DMatch> scoreMatches(const cv::Mat &queryDescriptors, const cv::Mat &libraryDescriptors, std::vector<cv::Mat> &matchingImages, int imageIndex);
 };
 
-#endif SGLOH_OPENCV_IMAGESEARCH_HPP
+#endif //SGLOH_OPENCV_IMAGESEARCH_HPP
 
