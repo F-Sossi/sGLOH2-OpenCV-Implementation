@@ -1,5 +1,3 @@
-# ignore image folder
-/images
 # ignore cmake Build files
 /cmake*
 
