@@ -5,13 +5,121 @@
 #ifndef SGLOH_OPENCV_TESTS_HPP
 #define SGLOH_OPENCV_TESTS_HPP
 
+#include <chrono>
 #include <opencv2/opencv.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d.hpp>
 #include "sGLOH2.hpp"
 
 //constexpr int M = 8;
-constexpr int sGLOH_THRESHOLD = 100;
+constexpr int sGLOH_THRESHOLD = 20;
+
+void compareImages(const std::string& filename1, const std::string& filename2) {
+    // Load the images in grayscale
+    cv::Mat image1 = cv::imread(filename1, cv::IMREAD_GRAYSCALE);
+    cv::Mat image2 = cv::imread(filename2, cv::IMREAD_GRAYSCALE);
+
+    // Initialize SIFT detector and compute keypoints and descriptors for both images
+    // start timer
+    auto start = std::chrono::high_resolution_clock::now();
+    cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
+    std::vector<cv::KeyPoint> keypoints_sift1, keypoints_sift2;
+    cv::Mat descriptors_sift1, descriptors_sift2;
+    sift->detectAndCompute(image1, cv::noArray(), keypoints_sift1, descriptors_sift1);
+    sift->detectAndCompute(image2, cv::noArray(), keypoints_sift2, descriptors_sift2);
+    // end timer
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "SIFT time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+
+    // Match the SIFT descriptors using Brute-Force matcher
+    cv::BFMatcher matcher_sift;
+    std::vector<cv::DMatch> matches_sift;
+    matcher_sift.match(descriptors_sift1, descriptors_sift2, matches_sift);
+
+    // Filter out good matches based on their distance
+    std::vector<cv::DMatch> good_matches_sift;
+    double min_dist_sift = 100;
+    for( int i = 0; i < descriptors_sift1.rows; i++ ) {
+        if( matches_sift[i].distance <= std::max(2*min_dist_sift, 0.02) ) {
+            good_matches_sift.push_back( matches_sift[i]);
+        }
+    }
+
+    // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
+    // start timer
+    start = std::chrono::high_resolution_clock::now();
+    sGLOH2 sgloh2;
+    std::vector<cv::KeyPoint> keypoints_sgloh2_1, keypoints_sgloh2_2;
+    cv::Mat descriptors_sgloh2_1, descriptors_sgloh2_2;
+    sgloh2.compute(image1, keypoints_sgloh2_1, descriptors_sgloh2_1);
+    sgloh2.compute(image2, keypoints_sgloh2_2, descriptors_sgloh2_2);
+    // end timer
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "sGLOH2 time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+
+    // Initialize vectors to hold matches
+    std::vector<std::vector<cv::DMatch>> matches_sgloh2_threads;
+
+    // Use OpenCV's parallel_for_ to run loops in parallel
+    cv::parallel_for_(cv::Range(0, descriptors_sgloh2_1.rows), [&](const cv::Range& range) {
+        std::vector<cv::DMatch> matches_sgloh2_local;
+        for (int i = range.start; i < range.end; i++) {
+            double min_distance_sgloh2 = std::numeric_limits<double>::max();
+            int best_match = -1;
+            for (int j = 0; j < descriptors_sgloh2_2.rows; ++j) {
+                double distance = sgloh2.distance(descriptors_sgloh2_1.row(i), descriptors_sgloh2_2.row(j));
+                if (distance < min_distance_sgloh2) {
+                    min_distance_sgloh2 = distance;
+                    best_match = j;
+                }
+            }
+            if (best_match != -1) {
+                matches_sgloh2_local.push_back(cv::DMatch(i, best_match, min_distance_sgloh2));
+            }
+        }
+        matches_sgloh2_threads.push_back(matches_sgloh2_local);
+    });
+
+    // Merge all local matches vectors
+    std::vector<cv::DMatch> matches_sgloh2;
+    for (const auto& matches : matches_sgloh2_threads) {
+        matches_sgloh2.insert(matches_sgloh2.end(), matches.begin(), matches.end());
+    }
+
+//    // Filter out good matches based on their distance
+//    std::vector<cv::DMatch> good_matches_sgloh2;
+//    auto max_distance = 0.4;
+//    for (const auto& match : matches_sgloh2) {
+//        if (match.distance <= max_distance) {
+//            good_matches_sgloh2.push_back(match);
+//        }
+//    }
+
+// Filter out good matches based on their distance
+    std::vector<cv::DMatch> good_matches_sgloh2;
+    double min_dist_sgloh2 = 20; // You may need to adjust this value based on your specific application
+    for (const auto& match : matches_sgloh2) {
+        if (match.distance <= std::max(2*min_dist_sgloh2, 0.02)) {
+            good_matches_sgloh2.push_back(match);
+        }
+    }
+
+
+
+    // Print the number of good matches for both SIFT and sGLOH2
+    std::cout << "Number of good matches with sGLOH2: " << good_matches_sgloh2.size() << std::endl;
+    std::cout << "Number of good matches with SIFT: " << good_matches_sift.size() << std::endl;
+
+    // Draw the good matches for both SIFT
+    cv::Mat img_matches_sift, img_matches_sgloh2;
+    cv::drawMatches(image1, keypoints_sift1, image2, keypoints_sift2, good_matches_sift, img_matches_sift);
+    cv::drawMatches(image1, keypoints_sgloh2_1, image2, keypoints_sgloh2_2, good_matches_sgloh2, img_matches_sgloh2);
+
+    cv::imshow("Good Matches SIFT", img_matches_sift);
+    cv::imshow("Good Matches sGLOH2", img_matches_sgloh2);
+    cv::waitKey(0);
+}
+
 
 // tests using a rotation of the image
 void processImage(const std::string& filename) {
@@ -23,11 +131,16 @@ void processImage(const std::string& filename) {
     cv::rotate(image, image_flipped, cv::ROTATE_180);
 
     // Initialize SIFT detector and compute keypoints and descriptors for both images
+    // start timer
+    auto start = std::chrono::high_resolution_clock::now();
     cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
     std::vector<cv::KeyPoint> keypoints_sift, keypoints_sift_flipped;
     cv::Mat descriptors_sift, descriptors_sift_flipped;
     sift->detectAndCompute(image, cv::noArray(), keypoints_sift, descriptors_sift);
     sift->detectAndCompute(image_flipped, cv::noArray(), keypoints_sift_flipped, descriptors_sift_flipped);
+    // end timer
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "SIFT time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
     // Match the SIFT descriptors using Brute-Force matcher
     cv::BFMatcher matcher_sift;
@@ -44,25 +157,55 @@ void processImage(const std::string& filename) {
     }
 
     // Initialize sGLOH2 descriptor and compute keypoints and descriptors for both images
+    // start timer
+    start = std::chrono::high_resolution_clock::now();
     sGLOH2 sgloh2;
     std::vector<cv::KeyPoint> keypoints_sgloh2, keypoints_sgloh2_flipped;
     cv::Mat descriptors_sgloh2, descriptors_sgloh2_flipped;
     sgloh2.compute(image, keypoints_sgloh2, descriptors_sgloh2);
     sgloh2.compute(image_flipped, keypoints_sgloh2_flipped, descriptors_sgloh2_flipped);
+    // end timer
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "sGLOH2 time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
-    // Match the sGLOH2 descriptors using Brute-Force matcher
-    cv::BFMatcher matcher_sgloh2(cv::NORM_L2);
+    // Initialize vectors to hold matches
+    std::vector<std::vector<cv::DMatch>> matches_sgloh2_threads;
+
+    // Use OpenCV's parallel_for_ to run loops in parallel
+    cv::parallel_for_(cv::Range(0, descriptors_sgloh2.rows), [&](const cv::Range& range) {
+        std::vector<cv::DMatch> matches_sgloh2_local;
+        for (int i = range.start; i < range.end; i++) {
+            double min_distance_sgloh2 = std::numeric_limits<double>::max();
+            int best_match = -1;
+            for (int j = 0; j < descriptors_sgloh2_flipped.rows; ++j) {
+                double distance = sgloh2.distance(descriptors_sgloh2.row(i), descriptors_sgloh2_flipped.row(j));
+                if (distance < min_distance_sgloh2) {
+                    min_distance_sgloh2 = distance;
+                    best_match = j;
+                }
+            }
+            if (best_match != -1) {
+                matches_sgloh2_local.push_back(cv::DMatch(i, best_match, min_distance_sgloh2));
+            }
+        }
+        matches_sgloh2_threads.push_back(matches_sgloh2_local);
+    });
+
+    // Merge all local matches vectors
     std::vector<cv::DMatch> matches_sgloh2;
-    matcher_sgloh2.match(descriptors_sgloh2, descriptors_sgloh2_flipped, matches_sgloh2);
+    for (const auto& matches : matches_sgloh2_threads) {
+        matches_sgloh2.insert(matches_sgloh2.end(), matches.begin(), matches.end());
+    }
 
     // Filter out good matches based on their distance
     std::vector<cv::DMatch> good_matches_sgloh2;
-    double min_dist_sgloh2 = sGLOH_THRESHOLD;
-    for( int i = 0; i < descriptors_sgloh2.rows; i++ ) {
-        if( matches_sgloh2[i].distance <= std::max(2*min_dist_sgloh2, 0.02) ) {
-            good_matches_sgloh2.push_back( matches_sgloh2[i]);
+    auto max_distance = 0.4;
+    for (const auto& match : matches_sgloh2) {
+        if (match.distance <= max_distance) {
+            good_matches_sgloh2.push_back(match);
         }
     }
+
 
     // Print the number of good matches for both SIFT and sGLOH2
     std::cout << "Number of good matches with sGLOH2: " << good_matches_sgloh2.size() << std::endl;
