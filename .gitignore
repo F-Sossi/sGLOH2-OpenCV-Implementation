@@ -1,5 +1,6 @@
 # ignore cmake Build files
 /cmake*
+/other*
 
 #ignore clion build files
 /.idea*

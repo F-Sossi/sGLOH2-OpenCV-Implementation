@@ -1,6 +1,7 @@
 
 #include "tests.hpp"
 #include "imageMatcher.hpp"
+#include "ImageComparator.hpp"
 
 int main(int argc, char** argv) {
 
@@ -10,7 +11,10 @@ int main(int argc, char** argv) {
     // processImage4 uses a rotated image with FLANN matching
     // processImage5 uses a scaled with BF matching
     // processImage6 uses a 45 degree rotation with BF matching
-    compareImages("img1.ppm", "img2.ppm");
+    //compareImages("img1.ppm", "img2.ppm");
+
+    ImageComparator comparator("ciri.jpg", "../other");
+    comparator.runComparison();
 
 
 //    //create imagematcher
