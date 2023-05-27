@@ -1,7 +1,6 @@
-#ifndef SGLOH_OPENCV_IMAGECOMPARATOR_HPP
-#define SGLOH_OPENCV_IMAGECOMPARATOR_HPP
+#ifndef SIFT_OPENCV_IMAGECOMPARATORSIFT_HPP
+#define SIFT_OPENCV_IMAGECOMPARATORSIFT_HPP
 
-#include "sGLOH2.hpp"
 #include <opencv2/opencv.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <filesystem>
@@ -13,22 +12,22 @@
 
 namespace fs = std::filesystem;
 
-class ImageComparator {
+class ImageComparatorSift {
 public:
-    ImageComparator(std::string  inputImagePath, std::string  folderPath)
+    ImageComparatorSift(std::string  inputImagePath, std::string  folderPath)
             : inputImagePath_(std::move(inputImagePath)), folderPath_(std::move(folderPath)) {}
 
     void runComparison() {
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
 
-        // Initialize sGLOH2 descriptor
-        sGLOH2 sgloh2;
+        // Initialize SIFT descriptor
+        cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
 
-        // Compute sGLOH2 descriptors for the input image
+        // Compute SIFT descriptors for the input image
         std::vector<cv::KeyPoint> inputKeyPoints;
         cv::Mat inputDescriptors;
-        sgloh2.compute(inputImage, inputKeyPoints, inputDescriptors);
+        sift->detectAndCompute(inputImage, cv::noArray(), inputKeyPoints, inputDescriptors);
 
         // Get all image paths in the folder
         std::vector<std::string> imagePaths;
@@ -48,52 +47,32 @@ public:
                 // Compute descriptors
                 std::vector<cv::KeyPoint> keyPoints;
                 cv::Mat descriptors;
-                sgloh2.compute(image, keyPoints, descriptors);
+                sift->detectAndCompute(image, cv::noArray(), keyPoints, descriptors);
 
                 // Compute matches
-                std::vector<cv::DMatch> matches_sgloh2;
-                cv::parallel_for_(cv::Range(0, inputDescriptors.rows), [&](const cv::Range& range) {
-                    std::vector<cv::DMatch> matches_sgloh2_local;
-                    for (int i = range.start; i < range.end; i++) {
-                        double min_distance_sgloh2 = std::numeric_limits<double>::max();
-                        int best_match = -1;
-                        for (int j = 0; j < descriptors.rows; ++j) {
-                            double distance = sgloh2.distance(inputDescriptors.row(i), descriptors.row(j));
-                            if (distance < min_distance_sgloh2) {
-                                min_distance_sgloh2 = distance;
-                                best_match = j;
-                            }
-                        }
-                        if (best_match != -1) {
-                            matches_sgloh2_local.emplace_back(i, best_match, min_distance_sgloh2);
-                        }
-                    }
-
-                    // Synchronize access to the matches_sgloh2 vector
-                    std::lock_guard<std::mutex> lock(mtx);
-                    matches_sgloh2.insert(matches_sgloh2.end(), matches_sgloh2_local.begin(), matches_sgloh2_local.end());
-                });
+                cv::BFMatcher matcher(cv::NORM_L2);
+                std::vector<cv::DMatch> matches;
+                matcher.match(inputDescriptors, descriptors, matches);
 
                 // Filter out good matches based on their distance
-                std::vector<cv::DMatch> good_matches_sgloh2;
+                std::vector<cv::DMatch> good_matches;
                 double max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
-                for (const auto& match : matches_sgloh2) {
+                for (const auto& match : matches) {
                     if (match.distance <= max_distance) {
-                        good_matches_sgloh2.push_back(match);
+                        good_matches.push_back(match);
                     }
                 }
-
 
                 // Synchronize access to the priority queue
                 std::lock_guard<std::mutex> lock(mtx);
                 ImageMatches imageMatches;
                 imageMatches.path = imagePaths[i];
-                imageMatches.count = good_matches_sgloh2.size();
+                imageMatches.count = good_matches.size();
                 mostMatches.push(imageMatches);
 
                 // Store keypoints and matches for each image
                 keypointsMap[imagePaths[i]] = keyPoints;
-                matchesMap[imagePaths[i]] = matches_sgloh2;
+                matchesMap[imagePaths[i]] = good_matches;
 
                 // Print progress
                 std::cout << "Processed " << range.end - range.start << " images" << std::endl;
@@ -101,15 +80,15 @@ public:
 
         });
 
-
-        //print exit for loop
+        // Print exit for loop
         std::cout << "Finished processing images" << std::endl;
 
         // Draw matches between input image and top three images
         std::vector<cv::Mat> topImages;
         std::vector<std::vector<cv::DMatch>> topMatches;
         std::vector<std::vector<cv::KeyPoint>> topKeypoints;
-        for (int i = 0; i < 3 && !mostMatches.empty(); ++i) {
+
+        for (int i = 0; i < 5 && !mostMatches.empty(); ++i) {
             const auto& top = mostMatches.top();
             topImages.push_back(cv::imread(top.path, cv::IMREAD_GRAYSCALE));
             topMatches.push_back(matchesMap[top.path]);
@@ -152,6 +131,5 @@ private:
 
 };
 
+#endif //SIFT_OPENCV_IMAGECOMPARATORSIFT_HPP
 
-
-#endif //SGLOH_OPENCV_IMAGECOMPARATOR_HPP
