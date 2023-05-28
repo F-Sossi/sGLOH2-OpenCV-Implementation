@@ -25,7 +25,7 @@
  * and the candidate descriptors. It then computes the sum of the distance vectors for each candidate
  * descriptor and returns the top k candidates.
  */
-void match_blocks(const cv::Mat& query, const cv::Mat& descriptors, int k, std::vector<int>& indices, std::vector<float>& distances) {
+void  matcher (const cv::Mat& query, const cv::Mat& descriptors, int k, std::vector<int>& indices, std::vector<float>& distances) {
     // Divide the sGLOH descriptor into blocks.
     int num_blocks = 16;
     int block_size = 8;
