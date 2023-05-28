@@ -6,13 +6,14 @@
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <iostream>
 
 // Only use odd sizes for the patch size (circular region of interest)
 // good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121
 constexpr int PATCH_SIZE = 41;
 constexpr int N = 2;
-constexpr int M = 8;
-constexpr int Q = 8;
+constexpr int M = 4;
+constexpr int Q = 4;
 
 /**
  * @brief Constructor for the sGLOH2 class. It precomputes masks for each ring and sector
@@ -126,6 +127,7 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
             cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
 
             descriptors_temp[r] = descriptor;
+
         }
     });
 
@@ -158,8 +160,9 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
             // Compute the histogram for the region.
             cv::Mat histogramMat = computeHistogram(patch, region_mask, Q);
 
-            // Concatenate the histogram to the descriptor.
-            cv::hconcat(descriptor, histogramMat, descriptor);
+            // Place the histogram to the descriptor at the correct position.
+            int start = (ring * M + sector) * Q;
+            histogramMat.copyTo(descriptor.colRange(start, start + Q));
         }
     }
 
@@ -184,37 +187,35 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
  * @param patch The image patch to be processed. It must be a single-channel matrix of type CV_8U.
  * @return The sGLOH2 descriptor for the patch as a single-row matrix of type CV_32F.
  */
+
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
-    // The compute_sGLOH function computes the sGLOH2 descriptor for a given patch.
-    // It divides the patch into m*m regions and computes a gradient orientation histogram for each region.
-    // These histograms are then concatenated to form the final descriptor for the patch.
+    // Compute the sGLOH descriptor for the original patch.
+    cv::Mat descriptor = compute_sGLOH_single(patch);
 
-    cv::Mat descriptor;
+    // Compute the center of the patch.
     cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
-    double angle_step = 360.0 / (2*M); // angle in degrees
 
-    for(int i = 0; i < 2*M; i++) {
-        cv::Mat patch_rotated;
-        double angle = i * angle_step;
+    // Compute the rotation angle in degrees (2*pi/M converted to degrees).
+    double angle_step = 360.0 / M;
 
-        cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle, 1.0);
-        cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
+    // Rotate the patch by the computed angle.
+    cv::Mat patch_rotated;
+    cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle_step, 1.0);
+    cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
 
-        cv::Mat descriptor_part = compute_sGLOH_single(patch_rotated);
+    // Compute the sGLOH descriptor for the rotated patch.
+    cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
 
-        if (descriptor.empty()) {
-            descriptor = descriptor_part;
-        } else {
-            cv::hconcat(descriptor, descriptor_part, descriptor);
-        }
-    }
+    // Concatenate the original and rotated descriptors to form the final descriptor.
+    cv::hconcat(descriptor, descriptor_rotated, descriptor);
 
     // Normalize the descriptor.
     cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
 
-    // The final, normalized sGLOH2 descriptor is then returned.
+    // Return the final descriptor.
     return descriptor;
 }
+
 
 /**
  * @brief Compute the extended sGLOH (sGLOH2) descriptor for a single image patch.
@@ -307,7 +308,7 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
 
     // Compute the size of the blocks. Each block corresponds to a region of the image.
     // The descriptor is divided into 2*m blocks along the column dimension, as it's a concatenation of two sGLOH descriptors.
-    int block_size = descriptor.cols / (2*M);
+    int block_size = Q * N * M / (2*M);
 
     // Shift each block by k positions. This is done by converting each block to a vector,
     // rotating the vector, and then converting it back to a block.

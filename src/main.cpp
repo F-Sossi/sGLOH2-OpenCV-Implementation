@@ -3,19 +3,27 @@
 #include "imageMatcher.hpp"
 #include "ImageComparatorSgloh.hpp"
 #include "ImageComparatorSift.hpp"
+#include "sGlohUtilites.hpp"
 
 
 #include <chrono>
 
 int main(int argc, char** argv) {
 
+//--------------------Single Image Tests-----------------------
     // processImage uses a flipped image
     // processImage2 identical images
     // processImage3 uses a shifted image
     // processImage4 uses a rotated image with FLANN matching
     // processImage5 uses a scaled with BF matching
     // processImage6 uses a 45-degree rotation with BF matching
-    //compareImages("img1.ppm", "img2.ppm");
+
+//-------Two image test ---------------------------------------
+
+//    compareImages("img1.ppm", "img2.ppm");
+
+
+//-------Image Search tests -----------------------------------
 
     // Time the execution of the sGLOH2 descriptor
     // begin timer
@@ -41,6 +49,8 @@ int main(int argc, char** argv) {
     std::chrono::duration<double> elapsed2 = finish2 - start2;
     std::cout << "SIFT descriptor took " << elapsed2.count() << " seconds" << std::endl;
 
+
+//-------Image Search tests 2-----------------------------------
 
 //    //create imagematcher
 //    ImageMatcher imageMatcher;

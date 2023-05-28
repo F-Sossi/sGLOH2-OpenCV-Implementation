@@ -22,6 +22,12 @@ public:
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
 
+        // Select a ROI from the input image
+        cv::Rect roi = selectROI(inputImage);
+
+        // Only keep the part of the image within the ROI
+        inputImage = inputImage(roi);
+
         // Initialize sGLOH2 descriptor
         sGLOH2 sgloh2;
 
@@ -131,6 +137,16 @@ public:
     }
 
 private:
+    cv::Rect selectROI(const cv::Mat& image) {
+        // Display the image and wait for a rectangle selection
+        cv::Rect roi = cv::selectROI("Select ROI", image);
+
+        // Destroy the "Select ROI" window
+        cv::destroyWindow("Select ROI");
+
+        return roi;
+    };
+
     struct ImageMatches {
         std::string path;
         size_t count;

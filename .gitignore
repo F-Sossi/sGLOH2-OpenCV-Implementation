@@ -1,9 +1,11 @@
 # ignore cmake Build files
 /cmake*
 /other*
+/data*
 
 #ignore clion build files
 /.idea*
+/.vscode*
 
 # Visual Studio files
 *.suo
@@ -110,3 +112,6 @@ packages/
 *.swp
 *.swo
 *.tmp
+/data/
+/data/
+/data/
