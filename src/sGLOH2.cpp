@@ -1,6 +1,25 @@
-//
-// Created by user on 5/10/23.
-//
+/**
+ * @file sGLOH2.cpp
+ * @author Frank Sossi, Justin Boyer
+ * @date 5/10/23
+ * @brief Definition of the sGLOH2 class.
+ *
+ * This class provides the definition for the sGLOH2 class, including
+ * constructors, computation and utility methods. The class is designed
+ * for computing the sGLOH2 descriptor for a given image patch.
+ *
+ * Implemented functions:
+ * sGLOH2::sGLOH2(int m = 8)
+ * void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+ * cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch)
+ * double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2)
+ * cv::Mat sGLOH2::cyclicShift(const cv::Mat &descriptor, int k)
+ * cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat &patch)
+ * cv::Mat sGLOH2::computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges)
+ * cv::Mat sGLOH2::computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m)
+ * double sGLOH2::cosine_similarity(const cv::Mat &H1, const cv::Mat &H2)
+ *
+ */
 
 #include "sGLOH2.hpp"
 #include <opencv2/xfeatures2d.hpp>
@@ -68,6 +87,7 @@ sGLOH2::sGLOH2(int m) : m(m) {
         }
     }
 }
+
 /**
  * @brief Computes the sGLOH descriptors for the given image and keypoints.
  *
@@ -187,7 +207,6 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
  * @param patch The image patch to be processed. It must be a single-channel matrix of type CV_8U.
  * @return The sGLOH2 descriptor for the patch as a single-row matrix of type CV_32F.
  */
-
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the sGLOH descriptor for the original patch.
     cv::Mat descriptor = compute_sGLOH_single(patch);
@@ -215,7 +234,6 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Return the final descriptor.
     return descriptor;
 }
-
 
 /**
  * @brief Compute the extended sGLOH (sGLOH2) descriptor for a single image patch.
@@ -300,7 +318,6 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     cv::Mat shifted_descriptor = descriptor.clone();
 
     // Compute the size of the blocks. Each block corresponds to a region of the image.
-    // The descriptor is divided into 2*m blocks along the column dimension, as it's a concatenation of two sGLOH descriptors.
     int block_size = Q * N * M / (2*M);
 
     // Yes this is pointless for loop, but I wanted to preserve the ability to rotate in different ways
