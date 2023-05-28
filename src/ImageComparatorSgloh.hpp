@@ -124,12 +124,12 @@ public:
         }
 
         for (size_t i = 0; i < topImages.size(); ++i) {
-            cv::Mat imgMatches;
-            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
+//            cv::Mat imgMatches;
+//            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
             // Create a unique window name for each match
             std::string windowName = "Match " + std::to_string(i+1);
-            cv::imshow(windowName, imgMatches);
+            cv::imshow(windowName, topImages[i]);
         }
 
         cv::waitKey(0);

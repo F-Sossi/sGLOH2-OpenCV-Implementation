@@ -13,7 +13,7 @@
 constexpr int PATCH_SIZE = 41;
 constexpr int N = 2;
 constexpr int M = 4;
-constexpr int Q = 4;
+constexpr int Q = 8;
 
 /**
  * @brief Constructor for the sGLOH2 class. It precomputes masks for each ring and sector
@@ -243,8 +243,8 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
 
     // Try each rotation for the second descriptor.
     for (int k = 0; k < M; ++k) {
-        H2_1 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(0, H_star2.cols / 2)), k);
-        H2_2 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(H_star2.cols / 2, H_star2.cols)), k);
+        H2_1 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(0, H_star2.cols / 2)), 32);
+        H2_2 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(H_star2.cols / 2, H_star2.cols)), 32);
 
         // Concatenate the halves into a full descriptor for this rotation.
         cv::Mat H2_shifted;
