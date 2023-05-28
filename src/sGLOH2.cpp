@@ -195,7 +195,7 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the center of the patch.
     cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
 
-    // Compute the rotation angle in degrees (2*pi/M converted to degrees).
+    // Compute the rotation angle in degrees (pi/M converted to degrees).
     double angle_step = 360.0 / M;
 
     // Rotate the patch by the computed angle.
@@ -236,19 +236,11 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
     double min_distance = std::numeric_limits<double>::max();
     int best_rotation = 0;
 
-    // Split each descriptor into two halves.
-    cv::Mat H1_1 = H_star1(cv::Range(0, 1), cv::Range(0, H_star1.cols / 2));
-    cv::Mat H1_2 = H_star1(cv::Range(0, 1), cv::Range(H_star1.cols / 2, H_star1.cols));
-    cv::Mat H2_1, H2_2;
+    cv::Mat H2_shifted;
 
     // Try each rotation for the second descriptor.
     for (int k = 0; k < M; ++k) {
-        H2_1 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(0, H_star2.cols / 2)), 32);
-        H2_2 = cyclicShift(H_star2(cv::Range(0, 1), cv::Range(H_star2.cols / 2, H_star2.cols)), 32);
-
-        // Concatenate the halves into a full descriptor for this rotation.
-        cv::Mat H2_shifted;
-        cv::hconcat(H2_1, H2_2, H2_shifted);
+        H2_shifted = cyclicShift(H_star2, 32);
 
         // Compute the distance between H_star1 and the rotated H2.
         double distance = cv::norm(H_star1, H2_shifted, cv::NORM_L1);
@@ -260,15 +252,10 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
         }
     }
 
-    // Add a global constraint on the rotations.
-    int rotation_threshold = M / 2;  // Adjust this value according to your requirements
-    if (abs(best_rotation - M / 2) > rotation_threshold) {
-        return std::numeric_limits<double>::max();
-    }
-
     // Return the minimum distance. The lower the distance, the better the match.
     return min_distance;
 }
+
 
 double sGLOH2::cosine_similarity(const cv::Mat& H1, const cv::Mat& H2) {
     // Convert the descriptors to 1D vectors.
@@ -310,9 +297,8 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     // The descriptor is divided into 2*m blocks along the column dimension, as it's a concatenation of two sGLOH descriptors.
     int block_size = Q * N * M / (2*M);
 
-    // Shift each block by k positions. This is done by converting each block to a vector,
-    // rotating the vector, and then converting it back to a block.
-    for (int i = 0; i < 2*M; ++i) {
+    // Yes this is pointless for loop, but I wanted to preserve the ability to rotate in different ways
+    for (int i = 0; i < 1; ++i) {
         // Extract the i-th block from the descriptor.
         cv::Mat block = descriptor(cv::Range::all(), cv::Range(i * block_size, (i + 1) * block_size));
 
