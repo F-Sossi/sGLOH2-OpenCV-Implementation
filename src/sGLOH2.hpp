@@ -11,6 +11,7 @@ class sGLOH2 {
 private:
     int m;  // discretization of the rotation
     cv::Mat H1, H2;
+    std::vector<std::vector<cv::Mat>> region_masks;
 
 public:
     explicit sGLOH2(int m = 8);  // default number of bins to 8
@@ -19,12 +20,12 @@ public:
 
     cv::Mat compute_sGLOH(const cv::Mat& patch);
 
-    double distance(const cv::Mat& H_star1, const cv::Mat& H_star2);
+    static double distance(const cv::Mat& H_star1, const cv::Mat& H_star2);
 
     // Add more methods as needed for other operations, such as matching or orientation estimation
-    cv::Mat computeHistogram(const cv::Mat &region, int m);
+    //cv::Mat computeHistogram(const cv::Mat &region, int m);
 
-    cv::Mat cyclicShift(const cv::Mat &descriptor, int k);
+    static cv::Mat cyclicShift(const cv::Mat &descriptor, int k);
 
     cv::Mat compute_sGLOH_single(const cv::Mat &patch);
 
@@ -34,7 +35,7 @@ public:
 
     double cosine_similarity(const cv::Mat &H1, const cv::Mat &H2);
 
-    cv::Mat computeWeightedHistogram(const cv::Mat &orientation, const cv::Mat &magnitude, const cv::Mat &mask, int m);
+    //cv::Mat computeWeightedHistogram(const cv::Mat &orientation, const cv::Mat &magnitude, const cv::Mat &mask, int m);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP
