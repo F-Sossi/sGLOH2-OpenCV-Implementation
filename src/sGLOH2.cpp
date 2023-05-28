@@ -9,7 +9,7 @@
 #include <iostream>
 
 // Only use odd sizes for the patch size (circular region of interest)
-// good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121
+// good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121 etc.
 constexpr int PATCH_SIZE = 41;
 constexpr int N = 2;
 constexpr int M = 4;
