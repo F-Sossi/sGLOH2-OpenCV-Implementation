@@ -252,6 +252,12 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
         }
     }
 
+        // Add a global constraint on the rotations.
+    int rotation_threshold = M / 2;  // Adjust this value according to your requirements
+    if (abs(best_rotation - M / 2) > rotation_threshold) {
+        return std::numeric_limits<double>::max();
+    }
+
     // Return the minimum distance. The lower the distance, the better the match.
     return min_distance;
 }
