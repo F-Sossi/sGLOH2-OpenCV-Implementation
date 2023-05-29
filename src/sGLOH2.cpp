@@ -110,26 +110,79 @@ sGLOH2::sGLOH2(int m) : m(m) {
  * @note The keypoints that are too close to the border of the image are skipped to avoid
  *       extracting patches outside of the image boundaries.
  */
-void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+//void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+//
+////    // Create ORB detector
+////    cv::Ptr<cv::ORB> detector = cv::ORB::create();
+////    detector->detect(image, keypoints);
+//
+//    // Create SIFT detector
+//    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+//    detector->detect(image, keypoints);
+//
+//    int patchSize = PATCH_SIZE;
+//
+//    std::vector<cv::Mat> descriptors_temp; //(keypoints.size());
+//
+//    // Parallel loop across all keypoints
+//    cv::parallel_for_(cv::Range(0, keypoints.size()), [&](const cv::Range& range) {
+//        for (int r = range.start; r < range.end; r++) {
+//            auto& keypoint = keypoints[r];
+//            cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
+//
+//            if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
+//                continue;
+//            }
+//
+//            cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
+//
+//            // Create a copy of the patch to be rotated.
+//            cv::Mat rotatedPatch = patch.clone();
+//
+//            // Create a rotation matrix for rotating the patch to align with the keypoint orientation.
+//            cv::Mat rotMat = cv::getRotationMatrix2D(cv::Point2f(patchSize / 2, patchSize / 2), -keypoint.angle, 1.0);
+//
+//            // Apply the rotation to the copy of the patch.
+//            cv::warpAffine(rotatedPatch, rotatedPatch, rotMat, rotatedPatch.size());
+//
+//            cv::Mat descriptor = compute_sGLOH(rotatedPatch);
+//
+//            // Normalize the descriptor.
+//            cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+//
+//            descriptors_temp[r] = descriptor;
+//
+//        }
+//    });
+//
+//    // Concatenate descriptors
+//    cv::vconcat(descriptors_temp, descriptors);
+//}
 
+void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
     // Create ORB detector
     cv::Ptr<cv::ORB> detector = cv::ORB::create();
     detector->detect(image, keypoints);
 
+
     int patchSize = PATCH_SIZE;
 
-    std::vector<cv::Mat> descriptors_temp(keypoints.size());
+    // Remove keypoints too close to the edge
+    keypoints.erase(std::remove_if(keypoints.begin(), keypoints.end(),
+                                   [&](const cv::KeyPoint& keypoint) {
+                                       cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
+                                       return topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows;
+                                   }), keypoints.end());
+
+    std::vector<cv::Mat> descriptors_temp;
+    std::mutex mtx;
 
     // Parallel loop across all keypoints
     cv::parallel_for_(cv::Range(0, keypoints.size()), [&](const cv::Range& range) {
+        std::vector<cv::Mat> descriptors_local;
         for (int r = range.start; r < range.end; r++) {
             auto& keypoint = keypoints[r];
             cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
-
-            if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
-                continue;
-            }
-
             cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
 
             // Create a copy of the patch to be rotated.
@@ -146,14 +199,17 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
             // Normalize the descriptor.
             cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
 
-            descriptors_temp[r] = descriptor;
-
+            descriptors_local.push_back(descriptor);
         }
+        // Thread-safe push back to the global descriptor list
+        std::lock_guard<std::mutex> lock(mtx);
+        descriptors_temp.insert(descriptors_temp.end(), descriptors_local.begin(), descriptors_local.end());
     });
 
     // Concatenate descriptors
     cv::vconcat(descriptors_temp, descriptors);
 }
+
 
 /**
  * @brief Compute the Single GLOH (sGLOH) descriptor for a single image patch.

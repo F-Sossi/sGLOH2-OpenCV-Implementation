@@ -111,7 +111,7 @@ public:
         //print exit for loop
         std::cout << "Finished processing images" << std::endl;
 
-        // Draw matches between input image and top three images
+        // Draw matches between input image and top images
         std::vector<cv::Mat> topImages;
         std::vector<std::vector<cv::DMatch>> topMatches;
         std::vector<std::vector<cv::KeyPoint>> topKeypoints;

@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     // begin timer
     auto start = std::chrono::high_resolution_clock::now();
 
-    ImageComparatorSgloh comparator("../src_img/Bombay_105.jpg", "../images");
+    ImageComparatorSgloh comparator("../src_img/683_r240.png", "../images");
     comparator.runComparison();
 
     // end timer
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     // begin timer
     auto start2 = std::chrono::high_resolution_clock::now();
 
-    ImageComparatorSift comparatorSift("../src_img/Bombay_105.jpg", "../images");
+    ImageComparatorSift comparatorSift("../src_img/683_r240.png", "../images");
     comparatorSift.runComparison();
 
     // end timer
