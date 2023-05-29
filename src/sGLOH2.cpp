@@ -32,7 +32,7 @@
 constexpr int PATCH_SIZE = 41;
 constexpr int N = 2;
 constexpr int M = 4;
-constexpr int Q = 8;
+constexpr int Q = 4;
 
 /**
  * @brief Constructor for the sGLOH2 class. It precomputes masks for each ring and sector
