@@ -27,11 +27,13 @@ int main(int argc, char** argv) {
     auto start = std::chrono::high_resolution_clock::now();
     //Get input image path from arguments if provided
     std::string imageInputPath;
-    std::string folderPath = "../images";
+    std::string folderPath;
     if (argc == 3) {
         imageInputPath = argv[1];
+        folderPath = argv[2];
     } else {
-        imageInputPath = "../src_img/683_r240.png";
+        imageInputPath = "../src_img/toucan.png";
+        folderPath = "../images";
     }
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison();

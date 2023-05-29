@@ -22,6 +22,12 @@ public:
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
 
+        // Check if the image was loaded successfully
+        if (inputImage.empty()) {
+            std::cerr << "Error: Failed to load image: " << inputImagePath_ << std::endl;
+            return;
+        }
+
         // Select a ROI from the input image
         cv::Rect roi = selectROI(inputImage);
 
