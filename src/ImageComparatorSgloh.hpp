@@ -84,7 +84,7 @@ public:
 
                 // Filter out good matches based on their distance
                 std::vector<cv::DMatch> good_matches_sgloh2;
-                double max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
+                float max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
                 for (const auto& match : matches_sgloh2) {
                     if (match.distance <= max_distance) {
                         good_matches_sgloh2.push_back(match);
@@ -106,7 +106,6 @@ public:
                 // Print progress
                 std::cout << "Processed " << range.end - range.start << " images" << std::endl;
             }
-
         });
 
 
@@ -169,7 +168,4 @@ private:
     std::map<std::string, std::vector<cv::DMatch>> matchesMap;
 
 };
-
-
-
 #endif //SGLOH_OPENCV_IMAGECOMPARATORSGLOH_HPP

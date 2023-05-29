@@ -4,3 +4,5 @@ For this project the objective is to incorporate the sGLOH (scale-invariant Grad
 
 Links: 
 View Paper: https://www.overleaf.com/read/hmkghydpbrnm
+
+Test Plan: https://lucid.app/lucidspark/d923e81a-c75c-4dd8-b7c3-e4b6a1192972/edit?invitationId=inv_fbac7c33-fa32-4430-809d-e57e9bfe237c
