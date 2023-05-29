@@ -47,7 +47,9 @@ public:
 
         // Process images in parallel
         cv::parallel_for_(cv::Range(0, imagePaths.size()), [&](const cv::Range& range) {
-            for (int i = range.start; i < range.end; i++) {
+            size_t start = size_t(range.start); // use size_t to avoid warning
+            size_t end = size_t(range.end);
+            for (size_t i = start; i < end; i++) {
                 // Load image
                 cv::Mat image = cv::imread(imagePaths[i], cv::IMREAD_GRAYSCALE);
 
