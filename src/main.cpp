@@ -25,9 +25,14 @@ int main(int argc, char** argv) {
     // Time the execution of the sGLOH2 descriptor
     // begin timer
     auto start = std::chrono::high_resolution_clock::now();
-    std::string imageInputPath = "../src_img/683_r240.png";
+    //Get input image path from arguments if provided
+    std::string imageInputPath;
     std::string folderPath = "../images";
-
+    if (argc == 3) {
+        imageInputPath = argv[1];
+    } else {
+        imageInputPath = "../src_img/683_r240.png";
+    }
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison();
 
