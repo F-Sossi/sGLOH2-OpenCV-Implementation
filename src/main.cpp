@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
     // processImage5 uses a scaled with BF matching
     // processImage6 uses a 45-degree rotation with BF matching
 
+
 //-------Two image test ---------------------------------------
 
 //    compareImages("img1.ppm", "img2.ppm");

@@ -135,6 +135,108 @@ public:
         cv::waitKey(0);
 
     }
+//    void runComparison() {
+//        // Load the input image
+//        cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
+//
+//        // Select a ROI from the input image
+//        cv::Rect roi = selectROI(inputImage);
+//
+//        // Only keep the part of the image within the ROI
+//        inputImage = inputImage(roi);
+//
+//        // Initialize sGLOH2 descriptor
+//        sGLOH2 sgloh2;
+//
+//        // Compute sGLOH2 descriptors for the input image
+//        std::vector<cv::KeyPoint> inputKeyPoints;
+//        cv::Mat inputDescriptors;
+//        sgloh2.compute(inputImage, inputKeyPoints, inputDescriptors);
+//
+//        // Get all image paths in the folder
+//        std::vector<std::string> imagePaths;
+//        for (const auto& entry : fs::directory_iterator(folderPath_)) {
+//            imagePaths.push_back(entry.path().string());
+//        }
+//
+//        // Process images sequentially
+//        for (int i = 0; i < imagePaths.size(); i++) {
+//            // Load image
+//            cv::Mat image = cv::imread(imagePaths[i], cv::IMREAD_GRAYSCALE);
+//
+//            // Compute descriptors
+//            std::vector<cv::KeyPoint> keyPoints;
+//            cv::Mat descriptors;
+//            sgloh2.compute(image, keyPoints, descriptors);
+//
+//            // Compute matches
+//            std::vector<cv::DMatch> matches_sgloh2;
+//            for (int i = 0; i < inputDescriptors.rows; i++) {
+//                double min_distance_sgloh2 = std::numeric_limits<double>::max();
+//                int best_match = -1;
+//                for (int j = 0; j < descriptors.rows; ++j) {
+//                    double distance = sgloh2.distance(inputDescriptors.row(i), descriptors.row(j));
+//                    if (distance < min_distance_sgloh2) {
+//                        min_distance_sgloh2 = distance;
+//                        best_match = j;
+//                    }
+//                }
+//                if (best_match != -1) {
+//                    matches_sgloh2.emplace_back(i, best_match, min_distance_sgloh2);
+//                }
+//            }
+//
+//            // Filter out good matches based on their distance
+//            std::vector<cv::DMatch> good_matches_sgloh2;
+//            double max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
+//            for (const auto& match : matches_sgloh2) {
+//                if (match.distance <= max_distance) {
+//                    good_matches_sgloh2.push_back(match);
+//                }
+//            }
+//
+//            ImageMatches imageMatches;
+//            imageMatches.path = imagePaths[i];
+//            imageMatches.count = good_matches_sgloh2.size();
+//            mostMatches.push(imageMatches);
+//
+//            // Store keypoints and matches for each image
+//            keypointsMap[imagePaths[i]] = keyPoints;
+//            matchesMap[imagePaths[i]] = matches_sgloh2;
+//
+//            // Print progress
+//            std::cout << "Processed " << i+1 << " images" << std::endl;
+//        }
+//
+//        //print exit for loop
+//        std::cout << "Finished processing images" << std::endl;
+//
+//        // Draw matches between input image and top three images
+//        std::vector<cv::Mat> topImages;
+//        std::vector<std::vector<cv::DMatch>> topMatches;
+//        std::vector<std::vector<cv::KeyPoint>> topKeypoints;
+//        for (int i = 0; i < 5 && !mostMatches.empty(); ++i) {
+//            const auto& top = mostMatches.top();
+//            topImages.push_back(cv::imread(top.path, cv::IMREAD_GRAYSCALE));
+//            topMatches.push_back(matchesMap[top.path]);
+//            topKeypoints.push_back(keypointsMap[top.path]);
+//            mostMatches.pop();
+//        }
+//
+//        for (size_t i = 0; i < topImages.size(); ++i) {
+//            cv::Mat imgMatches;
+//            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
+//
+//            // Create a unique window name for each match
+//            std::string windowName = "Match " + std::to_string(i+1);
+//            cv::imshow(windowName, imgMatches);
+//        }
+//
+//        cv::waitKey(0);
+//
+//
+//    }
+
 
 private:
     cv::Rect selectROI(const cv::Mat& image) {
