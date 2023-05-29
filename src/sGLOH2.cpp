@@ -32,7 +32,7 @@
 constexpr int PATCH_SIZE = 41;
 constexpr int N = 2;
 constexpr int M = 4;
-constexpr int Q = 8;
+constexpr int Q = 4;
 
 /**
  * @brief Constructor for the sGLOH2 class. It precomputes masks for each ring and sector
@@ -110,26 +110,79 @@ sGLOH2::sGLOH2(int m) : m(m) {
  * @note The keypoints that are too close to the border of the image are skipped to avoid
  *       extracting patches outside of the image boundaries.
  */
-void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+//void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
+//
+////    // Create ORB detector
+////    cv::Ptr<cv::ORB> detector = cv::ORB::create();
+////    detector->detect(image, keypoints);
+//
+//    // Create SIFT detector
+//    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+//    detector->detect(image, keypoints);
+//
+//    int patchSize = PATCH_SIZE;
+//
+//    std::vector<cv::Mat> descriptors_temp; //(keypoints.size());
+//
+//    // Parallel loop across all keypoints
+//    cv::parallel_for_(cv::Range(0, keypoints.size()), [&](const cv::Range& range) {
+//        for (int r = range.start; r < range.end; r++) {
+//            auto& keypoint = keypoints[r];
+//            cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
+//
+//            if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
+//                continue;
+//            }
+//
+//            cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
+//
+//            // Create a copy of the patch to be rotated.
+//            cv::Mat rotatedPatch = patch.clone();
+//
+//            // Create a rotation matrix for rotating the patch to align with the keypoint orientation.
+//            cv::Mat rotMat = cv::getRotationMatrix2D(cv::Point2f(patchSize / 2, patchSize / 2), -keypoint.angle, 1.0);
+//
+//            // Apply the rotation to the copy of the patch.
+//            cv::warpAffine(rotatedPatch, rotatedPatch, rotMat, rotatedPatch.size());
+//
+//            cv::Mat descriptor = compute_sGLOH(rotatedPatch);
+//
+//            // Normalize the descriptor.
+//            cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+//
+//            descriptors_temp[r] = descriptor;
+//
+//        }
+//    });
+//
+//    // Concatenate descriptors
+//    cv::vconcat(descriptors_temp, descriptors);
+//}
 
+void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) {
     // Create ORB detector
     cv::Ptr<cv::ORB> detector = cv::ORB::create();
     detector->detect(image, keypoints);
 
+
     int patchSize = PATCH_SIZE;
 
-    std::vector<cv::Mat> descriptors_temp(keypoints.size());
+    // Remove keypoints too close to the edge
+    keypoints.erase(std::remove_if(keypoints.begin(), keypoints.end(),
+                                   [&](const cv::KeyPoint& keypoint) {
+                                       cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
+                                       return topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows;
+                                   }), keypoints.end());
+
+    std::vector<cv::Mat> descriptors_temp;
+    std::mutex mtx;
 
     // Parallel loop across all keypoints
     cv::parallel_for_(cv::Range(0, keypoints.size()), [&](const cv::Range& range) {
+        std::vector<cv::Mat> descriptors_local;
         for (int r = range.start; r < range.end; r++) {
             auto& keypoint = keypoints[r];
             cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
-
-            if (topLeft.x < 0 || topLeft.y < 0 || topLeft.x + patchSize > image.cols || topLeft.y + patchSize > image.rows) {
-                continue;
-            }
-
             cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
 
             // Create a copy of the patch to be rotated.
@@ -146,14 +199,17 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
             // Normalize the descriptor.
             cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
 
-            descriptors_temp[r] = descriptor;
-
+            descriptors_local.push_back(descriptor);
         }
+        // Thread-safe push back to the global descriptor list
+        std::lock_guard<std::mutex> lock(mtx);
+        descriptors_temp.insert(descriptors_temp.end(), descriptors_local.begin(), descriptors_local.end());
     });
 
     // Concatenate descriptors
     cv::vconcat(descriptors_temp, descriptors);
 }
+
 
 /**
  * @brief Compute the Single GLOH (sGLOH) descriptor for a single image patch.
@@ -207,6 +263,33 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
  * @param patch The image patch to be processed. It must be a single-channel matrix of type CV_8U.
  * @return The sGLOH2 descriptor for the patch as a single-row matrix of type CV_32F.
  */
+//cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
+//    // Compute the sGLOH descriptor for the original patch.
+//    cv::Mat descriptor = compute_sGLOH_single(patch);
+//
+//    // Compute the center of the patch.
+//    cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
+//
+//    // Compute the rotation angle in degrees (pi/M converted to degrees).
+//    double angle_step = 360.0 / M;
+//
+//    // Rotate the patch by the computed angle.
+//    cv::Mat patch_rotated;
+//    cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle_step, 1.0);
+//    cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
+//
+//    // Compute the sGLOH descriptor for the rotated patch.
+//    cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+//
+//    // Concatenate the original and rotated descriptors to form the final descriptor.
+//    cv::hconcat(descriptor, descriptor_rotated, descriptor);
+//
+//    // Normalize the descriptor.
+//    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+//
+//    // Return the final descriptor.
+//    return descriptor;
+//}
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the sGLOH descriptor for the original patch.
     cv::Mat descriptor = compute_sGLOH_single(patch);
@@ -214,19 +297,24 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the center of the patch.
     cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
 
-    // Compute the rotation angle in degrees (pi/M converted to degrees).
-    double angle_step = 360.0 / M;
+    // Compute the rotation angle in degrees (90 degrees for each rotation).
+    double angle_step = 90.0;
 
-    // Rotate the patch by the computed angle.
+    // Rotate the patch 3 times by the computed angle.
     cv::Mat patch_rotated;
-    cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle_step, 1.0);
-    cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
+    for(int i = 0; i < 3; i++) {
+        // Get the rotation matrix.
+        cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, (i + 1) * angle_step, 1.0);
 
-    // Compute the sGLOH descriptor for the rotated patch.
-    cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+        // Rotate the patch.
+        cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
 
-    // Concatenate the original and rotated descriptors to form the final descriptor.
-    cv::hconcat(descriptor, descriptor_rotated, descriptor);
+        // Compute the sGLOH descriptor for the rotated patch.
+        cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+
+        // Concatenate the original and rotated descriptors to form the final descriptor.
+        cv::hconcat(descriptor, descriptor_rotated, descriptor);
+    }
 
     // Normalize the descriptor.
     cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
@@ -258,7 +346,7 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
 
     // Try each rotation for the second descriptor.
     for (int k = 0; k < M; ++k) {
-        H2_shifted = cyclicShift(H_star2, 32);
+        H2_shifted = cyclicShift(H_star2, 4);
 
         // Compute the distance between H_star1 and the rotated H2.
         double distance = cv::norm(H_star1, H2_shifted, cv::NORM_L1);
@@ -318,7 +406,7 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     cv::Mat shifted_descriptor = descriptor.clone();
 
     // Compute the size of the blocks. Each block corresponds to a region of the image.
-    int block_size = Q * N * M / (2*M);
+    int block_size = 16; //Q * N * M / (2*M); // currently 4
 
     // Yes this is pointless for loop, but I wanted to preserve the ability to rotate in different ways
     for (int i = 0; i < 1; ++i) {
