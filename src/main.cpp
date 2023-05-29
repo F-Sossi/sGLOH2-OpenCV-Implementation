@@ -1,6 +1,3 @@
-
-#include "tests.hpp"
-#include "imageMatcher.hpp"
 #include "ImageComparatorSgloh.hpp"
 #include "ImageComparatorSift.hpp"
 #include "sGlohUtilites.hpp"
@@ -28,8 +25,10 @@ int main(int argc, char** argv) {
     // Time the execution of the sGLOH2 descriptor
     // begin timer
     auto start = std::chrono::high_resolution_clock::now();
+    std::string imageInputPath = "../src_img/683_r240.png";
+    std::string folderPath = "../images";
 
-    ImageComparatorSgloh comparator("../src_img/683_r240.png", "../images");
+    ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison();
 
     // end timer
@@ -41,37 +40,13 @@ int main(int argc, char** argv) {
     // begin timer
     auto start2 = std::chrono::high_resolution_clock::now();
 
-    ImageComparatorSift comparatorSift("../src_img/683_r240.png", "../images");
+    ImageComparatorSift comparatorSift(imageInputPath, folderPath);
     comparatorSift.runComparison();
 
     // end timer
     auto finish2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed2 = finish2 - start2;
     std::cout << "SIFT descriptor took " << elapsed2.count() << " seconds" << std::endl;
-
-
-//-------Image Search tests 2-----------------------------------
-
-//    //create imagematcher
-//    ImageMatcher imageMatcher;
-//    cv::Mat image = cv::imread("../rin.jpg", cv::IMREAD_GRAYSCALE);
-//    cv::imshow("Query", image);
-//
-//    //Search images using sift
-////    std::cout << "Perform SIFT matching" << std::endl;
-////    std::vector<cv::Mat> siftImages = imageMatcher.siftMatch(image);
-////    std::cout << "Number of images above threshold: " << siftImages.size() << std::endl;
-////    for (int i = 0; i < siftImages.size(); i++) {
-////        cv::imshow("Image", siftImages[i]);
-////        cv::waitKey(0);
-////    }
-//    //Search images using sGlOH2
-//    std::cout << "Perform sGLOH2 matching" << std::endl;
-//    std::vector<cv::Mat> sgloh2Images = imageMatcher.sGLOHMatch(image, M);
-//    std::cout << "Number of images above threshold: " << sgloh2Images.size() << std::endl;
-//    for (int i = 0; i < sgloh2Images.size(); i++) {
-//        cv::imshow("Image", sgloh2Images[i]);
-//        cv::waitKey(0);
-//    }
+    cv::waitKey(0);
     return 0;
 }
