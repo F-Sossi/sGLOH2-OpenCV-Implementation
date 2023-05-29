@@ -207,6 +207,33 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
  * @param patch The image patch to be processed. It must be a single-channel matrix of type CV_8U.
  * @return The sGLOH2 descriptor for the patch as a single-row matrix of type CV_32F.
  */
+//cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
+//    // Compute the sGLOH descriptor for the original patch.
+//    cv::Mat descriptor = compute_sGLOH_single(patch);
+//
+//    // Compute the center of the patch.
+//    cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
+//
+//    // Compute the rotation angle in degrees (pi/M converted to degrees).
+//    double angle_step = 360.0 / M;
+//
+//    // Rotate the patch by the computed angle.
+//    cv::Mat patch_rotated;
+//    cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle_step, 1.0);
+//    cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
+//
+//    // Compute the sGLOH descriptor for the rotated patch.
+//    cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+//
+//    // Concatenate the original and rotated descriptors to form the final descriptor.
+//    cv::hconcat(descriptor, descriptor_rotated, descriptor);
+//
+//    // Normalize the descriptor.
+//    cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
+//
+//    // Return the final descriptor.
+//    return descriptor;
+//}
 cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the sGLOH descriptor for the original patch.
     cv::Mat descriptor = compute_sGLOH_single(patch);
@@ -214,19 +241,24 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
     // Compute the center of the patch.
     cv::Point2f center(patch.cols/2.0, patch.rows/2.0);
 
-    // Compute the rotation angle in degrees (pi/M converted to degrees).
-    double angle_step = 360.0 / M;
+    // Compute the rotation angle in degrees (90 degrees for each rotation).
+    double angle_step = 90.0;
 
-    // Rotate the patch by the computed angle.
+    // Rotate the patch 3 times by the computed angle.
     cv::Mat patch_rotated;
-    cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, angle_step, 1.0);
-    cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
+    for(int i = 0; i < 3; i++) {
+        // Get the rotation matrix.
+        cv::Mat rotation_matrix = cv::getRotationMatrix2D(center, (i + 1) * angle_step, 1.0);
 
-    // Compute the sGLOH descriptor for the rotated patch.
-    cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+        // Rotate the patch.
+        cv::warpAffine(patch, patch_rotated, rotation_matrix, patch.size(), cv::INTER_NEAREST);
 
-    // Concatenate the original and rotated descriptors to form the final descriptor.
-    cv::hconcat(descriptor, descriptor_rotated, descriptor);
+        // Compute the sGLOH descriptor for the rotated patch.
+        cv::Mat descriptor_rotated = compute_sGLOH_single(patch_rotated);
+
+        // Concatenate the original and rotated descriptors to form the final descriptor.
+        cv::hconcat(descriptor, descriptor_rotated, descriptor);
+    }
 
     // Normalize the descriptor.
     cv::normalize(descriptor, descriptor, 1, 0, cv::NORM_L1);
