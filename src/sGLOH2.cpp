@@ -258,7 +258,7 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
 
     // Try each rotation for the second descriptor.
     for (int k = 0; k < M; ++k) {
-        H2_shifted = cyclicShift(H_star2, 32);
+        H2_shifted = cyclicShift(H_star2, 4);
 
         // Compute the distance between H_star1 and the rotated H2.
         double distance = cv::norm(H_star1, H2_shifted, cv::NORM_L1);
@@ -318,7 +318,7 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     cv::Mat shifted_descriptor = descriptor.clone();
 
     // Compute the size of the blocks. Each block corresponds to a region of the image.
-    int block_size = Q * N * M / (2*M);
+    int block_size = 16; //Q * N * M / (2*M); // currently 4
 
     // Yes this is pointless for loop, but I wanted to preserve the ability to rotate in different ways
     for (int i = 0; i < 1; ++i) {
