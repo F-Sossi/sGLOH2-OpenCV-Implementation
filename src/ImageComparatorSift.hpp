@@ -17,9 +17,15 @@ public:
     ImageComparatorSift(std::string  inputImagePath, std::string  folderPath)
             : inputImagePath_(std::move(inputImagePath)), folderPath_(std::move(folderPath)) {}
 
-    void runComparison() {
+    void runComparison(bool suppressInput = false) {
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
+
+        // Check if the image was loaded successfully
+        if (inputImage.empty()) {
+            std::cerr << "Error: Failed to load image: " << inputImagePath_ << std::endl;
+            return;
+        }
 
         // Initialize SIFT descriptor
         cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
@@ -95,17 +101,17 @@ public:
             topKeypoints.push_back(keypointsMap[top.path]);
             mostMatches.pop();
         }
+        if(!suppressInput) {
+            for (size_t i = 0; i < topImages.size(); ++i) {
+                cv::Mat imgMatches;
+                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-        for (size_t i = 0; i < topImages.size(); ++i) {
-            cv::Mat imgMatches;
-            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
-
-            // Create a unique window name for each match
-            std::string windowName = "Match " + std::to_string(i+1);
-            cv::imshow(windowName, imgMatches);
+                // Create a unique window name for each match
+                std::string windowName = "Match " + std::to_string(i + 1);
+                cv::imshow(windowName, imgMatches);
+            }
+            cv::waitKey(0);
         }
-
-        cv::waitKey(0);
 
     }
 

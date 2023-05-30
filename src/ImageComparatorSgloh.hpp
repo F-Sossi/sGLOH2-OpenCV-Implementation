@@ -18,16 +18,23 @@ public:
     ImageComparatorSgloh(std::string  inputImagePath, std::string  folderPath)
             : inputImagePath_(std::move(inputImagePath)), folderPath_(std::move(folderPath)) {}
 
-    void runComparison() {
+    void runComparison(bool suppressInput = false) {
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
 
-        // Select a ROI from the input image
-        cv::Rect roi = selectROI(inputImage);
+        // Check if the image was loaded successfully
+        if (inputImage.empty()) {
+            std::cerr << "Error: Failed to load image: " << inputImagePath_ << std::endl;
+            return;
+        }
 
-        // Only keep the part of the image within the ROI
-        inputImage = inputImage(roi);
+        if(!suppressInput) {
+            // Select a ROI from the input image
+            cv::Rect roi = selectROI(inputImage);
 
+            // Only keep the part of the image within the ROI
+            inputImage = inputImage(roi);
+        }
         // Initialize sGLOH2 descriptor
         sGLOH2 sgloh2;
 
@@ -47,7 +54,9 @@ public:
 
         // Process images in parallel
         cv::parallel_for_(cv::Range(0, imagePaths.size()), [&](const cv::Range& range) {
-            for (int i = range.start; i < range.end; i++) {
+            size_t start = size_t(range.start); // use size_t to avoid warning
+            size_t end = size_t(range.end);
+            for (size_t i = start; i < end; i++) {
                 // Load image
                 cv::Mat image = cv::imread(imagePaths[i], cv::IMREAD_GRAYSCALE);
 
@@ -82,7 +91,7 @@ public:
 
                 // Filter out good matches based on their distance
                 std::vector<cv::DMatch> good_matches_sgloh2;
-                double max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
+                float max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
                 for (const auto& match : matches_sgloh2) {
                     if (match.distance <= max_distance) {
                         good_matches_sgloh2.push_back(match);
@@ -104,7 +113,6 @@ public:
                 // Print progress
                 std::cout << "Processed " << range.end - range.start << " images" << std::endl;
             }
-
         });
 
 
@@ -122,18 +130,18 @@ public:
             topKeypoints.push_back(keypointsMap[top.path]);
             mostMatches.pop();
         }
+        if(!suppressInput) {
+            for (size_t i = 0; i < topImages.size(); ++i) {
+                cv::Mat imgMatches;
+                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-        for (size_t i = 0; i < topImages.size(); ++i) {
-            cv::Mat imgMatches;
-            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
+                // Create a unique window name for each match
+                std::string windowName = "Match " + std::to_string(i + 1);
+                cv::imshow(windowName, imgMatches);
+            }
 
-            // Create a unique window name for each match
-            std::string windowName = "Match " + std::to_string(i+1);
-            cv::imshow(windowName, imgMatches);
+            cv::waitKey(0);
         }
-
-        cv::waitKey(0);
-
     }
 
 private:
@@ -167,7 +175,4 @@ private:
     std::map<std::string, std::vector<cv::DMatch>> matchesMap;
 
 };
-
-
-
 #endif //SGLOH_OPENCV_IMAGECOMPARATORSGLOH_HPP
