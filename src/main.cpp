@@ -28,15 +28,17 @@ int main(int argc, char** argv) {
     //Get input image path from arguments if provided
     std::string imageInputPath;
     std::string folderPath;
+    bool skipInputs = false; // skip user input for run if starting from script
     if (argc == 3) {
         imageInputPath = argv[1];
         folderPath = argv[2];
+        skipInputs = true;
     } else {
         imageInputPath = "../src_img/toucan.png";
         folderPath = "../images";
     }
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
-    comparator.runComparison();
+    comparator.runComparison(skipInputs);
 
     // end timer
     auto finish = std::chrono::high_resolution_clock::now();
@@ -48,12 +50,12 @@ int main(int argc, char** argv) {
     auto start2 = std::chrono::high_resolution_clock::now();
 
     ImageComparatorSift comparatorSift(imageInputPath, folderPath);
-    comparatorSift.runComparison();
+    comparatorSift.runComparison(skipInputs);
 
     // end timer
     auto finish2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed2 = finish2 - start2;
     std::cout << "SIFT descriptor took " << elapsed2.count() << " seconds" << std::endl;
-    cv::waitKey(0);
+    !skipInputs && cv::waitKey(0);
     return 0;
 }

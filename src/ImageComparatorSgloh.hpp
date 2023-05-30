@@ -18,7 +18,7 @@ public:
     ImageComparatorSgloh(std::string  inputImagePath, std::string  folderPath)
             : inputImagePath_(std::move(inputImagePath)), folderPath_(std::move(folderPath)) {}
 
-    void runComparison() {
+    void runComparison(bool suppressInput = false) {
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
 
@@ -28,12 +28,13 @@ public:
             return;
         }
 
-        // Select a ROI from the input image
-        cv::Rect roi = selectROI(inputImage);
+        if(!suppressInput) {
+            // Select a ROI from the input image
+            cv::Rect roi = selectROI(inputImage);
 
-        // Only keep the part of the image within the ROI
-        inputImage = inputImage(roi);
-
+            // Only keep the part of the image within the ROI
+            inputImage = inputImage(roi);
+        }
         // Initialize sGLOH2 descriptor
         sGLOH2 sgloh2;
 
@@ -129,18 +130,18 @@ public:
             topKeypoints.push_back(keypointsMap[top.path]);
             mostMatches.pop();
         }
+        if(!suppressInput) {
+            for (size_t i = 0; i < topImages.size(); ++i) {
+                cv::Mat imgMatches;
+                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-        for (size_t i = 0; i < topImages.size(); ++i) {
-            cv::Mat imgMatches;
-            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
+                // Create a unique window name for each match
+                std::string windowName = "Match " + std::to_string(i + 1);
+                cv::imshow(windowName, imgMatches);
+            }
 
-            // Create a unique window name for each match
-            std::string windowName = "Match " + std::to_string(i+1);
-            cv::imshow(windowName, imgMatches);
+            cv::waitKey(0);
         }
-
-        cv::waitKey(0);
-
     }
 
 private:

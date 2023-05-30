@@ -4,8 +4,8 @@ import subprocess
 executable_path = 'C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\cmake-build-debug-visual-studio\\sGLOH_opencv.exe'
 
 # Set command line arguments
-imageInputPath = "../src_img/683_r240.png"
-folderPath = "../images"
+imageInputPath = "C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\src_img\\toucan.png"
+folderPath = "C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\images"
 args = [imageInputPath, folderPath]
 
 # Run the executable and capture its output
