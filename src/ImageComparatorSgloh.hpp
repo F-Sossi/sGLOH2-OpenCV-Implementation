@@ -1,3 +1,27 @@
+/**
+ * @file ImageComparatorSgloh.hpp
+ * @author Frank Sossi, Justin Boyer
+ * @date 6/1/23
+ * @brief Definition of the ImageComparatorSgloh class.
+ *
+ * This class provides the definition for the ImageComparatorSgloh class, including
+ * constructors, computation and utility methods. The class is designed
+ * for comparing images using the sGLOH2 descriptor.
+ *
+ * Implemented functions:
+ * ImageComparatorSgloh::ImageComparatorSgloh(std::string  inputImagePath, std::string  folderPath)
+ * void ImageComparatorSgloh::runComparison(bool suppressInput = false)
+ * cv::Rect ImageComparatorSgloh::selectROI(const cv::Mat& image)
+ *
+ * This work is based on the following paper:
+ * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
+ * Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ *
+ * Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability
+ * to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+ *
+ */
+
 #ifndef SGLOH_OPENCV_IMAGECOMPARATORSGLOH_HPP
 #define SGLOH_OPENCV_IMAGECOMPARATORSGLOH_HPP
 
@@ -13,11 +37,27 @@
 
 namespace fs = std::filesystem;
 
+// Number of images to match
+constexpr int NUM_MATCHES_SGLOH = 5;
+
+// Max distance between keypoints to be considered a match
+constexpr double MAX_DISTANCE_SGLOH = 0.4;
+
 class ImageComparatorSgloh {
 public:
+    /**
+     * @brief Constructor for the ImageComparatorSgloh class.
+     * @param inputImagePath The path to the input image.
+     * @param folderPath The path to the folder containing the images to compare to.
+     */
     ImageComparatorSgloh(std::string  inputImagePath, std::string  folderPath)
             : inputImagePath_(std::move(inputImagePath)), folderPath_(std::move(folderPath)) {}
 
+    /**
+     * @brief Runs the sGLOH2 descriptor on the input image and compares it to the images in the folder.
+     * @param suppressInput If true, the user will not be prompted to select a region of interest.
+     * If false, the user will be prompted to select a region of interest.
+     */
     void runComparison(bool suppressInput = false) {
         // Load the input image
         cv::Mat inputImage = cv::imread(inputImagePath_, cv::IMREAD_GRAYSCALE);
@@ -35,6 +75,7 @@ public:
             // Only keep the part of the image within the ROI
             inputImage = inputImage(roi);
         }
+
         // Initialize sGLOH2 descriptor
         sGLOH2 sgloh2;
 
@@ -91,7 +132,7 @@ public:
 
                 // Filter out good matches based on their distance
                 std::vector<cv::DMatch> good_matches_sgloh2;
-                float max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
+                float max_distance = MAX_DISTANCE_SGLOH;
                 for (const auto& match : matches_sgloh2) {
                     if (match.distance <= max_distance) {
                         good_matches_sgloh2.push_back(match);
@@ -123,28 +164,35 @@ public:
         std::vector<cv::Mat> topImages;
         std::vector<std::vector<cv::DMatch>> topMatches;
         std::vector<std::vector<cv::KeyPoint>> topKeypoints;
-        for (int i = 0; i < 5 && !mostMatches.empty(); ++i) {
+
+        for (int i = 0; i < NUM_MATCHES_SGLOH && !mostMatches.empty(); ++i) {
             const auto& top = mostMatches.top();
             topImages.push_back(cv::imread(top.path, cv::IMREAD_GRAYSCALE));
             topMatches.push_back(matchesMap[top.path]);
             topKeypoints.push_back(keypointsMap[top.path]);
             mostMatches.pop();
         }
-        if(!suppressInput) {
-            for (size_t i = 0; i < topImages.size(); ++i) {
-                cv::Mat imgMatches;
-                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-                // Create a unique window name for each match
-                std::string windowName = "Match " + std::to_string(i + 1);
-                cv::imshow(windowName, imgMatches);
-            }
+        for (size_t i = 0; i < topImages.size(); ++i) {
+            cv::Mat imgMatches;
+            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-            cv::waitKey(0);
+            // Create a unique window name for each match
+            std::string windowName = "Match " + std::to_string(i + 1);
+            cv::imshow(windowName, imgMatches);
         }
+
+        cv::waitKey(0);
+
     }
 
 private:
+
+    /**
+     * @brief Selects a Region of Interest (ROI) from the input image.
+     * @param image The input image.
+     * @return The selected ROI.
+     */
     cv::Rect selectROI(const cv::Mat& image) {
         // Display the image and wait for a rectangle selection
         cv::Rect roi = cv::selectROI("Select ROI", image);
@@ -155,6 +203,10 @@ private:
         return roi;
     };
 
+    /**
+     * @struct ImageMatches
+     * @brief This struct is used to store the image path and the count of matches.
+     */
     struct ImageMatches {
         std::string path;
         size_t count;
@@ -175,4 +227,14 @@ private:
     std::map<std::string, std::vector<cv::DMatch>> matchesMap;
 
 };
+
 #endif //SGLOH_OPENCV_IMAGECOMPARATORSGLOH_HPP
+/**
+ * This work is based on the following paper:
+ * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
+ * Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ *
+ * Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability
+ * to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+ *
+ */

@@ -1,30 +1,31 @@
+/**
+ * @file main.cpp.cpp
+ * @author Frank Sossi, Justin Boyer
+ * @date 5/10/23
+ * @brief main file for running sGLOH2 descriptor
+ * This file provides the main function for running the sGLOH2 descriptor
+ * on a given image. The user can provide the path to the image as an
+ * argument, or the default image will be used. The user can also provide
+ * the path to the folder containing the images to compare against, or the
+ * default folder will be used.
+ *
+ * Implemented functions:
+ * int main(int argc, char** argv)
+ *
+ * This work is based on the following paper:
+ * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
+ * Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ *
+ * Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability
+ * to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+ *
+ */
 #include "ImageComparatorSgloh.hpp"
 #include "ImageComparatorSift.hpp"
-#include "sGlohUtilites.hpp"
-
-
 #include <chrono>
 
 int main(int argc, char** argv) {
 
-//--------------------Single Image Tests-----------------------
-    // processImage uses a flipped image
-    // processImage2 identical images
-    // processImage3 uses a shifted image
-    // processImage4 uses a rotated image with FLANN matching
-    // processImage5 uses a scaled with BF matching
-    // processImage6 uses a 45-degree rotation with BF matching
-
-//-------Two image test ---------------------------------------
-
-//    compareImages("img1.ppm", "img2.ppm");
-
-
-//-------Image Search tests -----------------------------------
-
-    // Time the execution of the sGLOH2 descriptor
-    // begin timer
-    auto start = std::chrono::high_resolution_clock::now();
     //Get input image path from arguments if provided
     std::string imageInputPath;
     std::string folderPath;
@@ -37,6 +38,11 @@ int main(int argc, char** argv) {
         imageInputPath = "../src_img/toucan.png";
         folderPath = "../images";
     }
+
+    // Time the execution of the sGLOH2 descriptor
+    // begin timer
+    auto start = std::chrono::high_resolution_clock::now();
+
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison(skipInputs);
 
@@ -56,6 +62,8 @@ int main(int argc, char** argv) {
     auto finish2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed2 = finish2 - start2;
     std::cout << "SIFT descriptor took " << elapsed2.count() << " seconds" << std::endl;
+
     !skipInputs && cv::waitKey(0);
+
     return 0;
 }

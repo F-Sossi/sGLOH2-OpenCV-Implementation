@@ -19,6 +19,13 @@
  * cv::Mat sGLOH2::computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m)
  * double sGLOH2::cosine_similarity(const cv::Mat &H1, const cv::Mat &H2)
  *
+ * This work is based on the following paper:
+ * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
+ * Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ *
+ * Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability
+ * to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+ *
  */
 #ifndef SGLOH_OPENCV_SGLOH2_HPP
 #define SGLOH_OPENCV_SGLOH2_HPP
@@ -60,14 +67,6 @@ private:
     cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m);
 
     /**
-     * @brief Computes the cosine similarity between two matrices.
-     * @param H1 The first matrix.
-     * @param H2 The second matrix.
-     * @return The cosine similarity between H1 and H2.
-     */
-    double cosine_similarity(const cv::Mat &H1, const cv::Mat &H2);
-
-    /**
      * @brief Computes the sGLOH descriptor for the given patch.
      * @param patch The patch to compute the descriptor for.
      * @return The computed sGLOH descriptor.
@@ -80,7 +79,7 @@ public:
      * @brief Constructs an sGLOH2 object.
      * @param m The number of bins. Default is 8.
      */
-    explicit sGLOH2(int m = 8);
+    explicit sGLOH2(int m = 4);
 
     /**
      * @brief Computes the sGLOH2 descriptors for the keypoints in the given image.
@@ -98,14 +97,17 @@ public:
      */
     static double distance(const cv::Mat& H_star1, const cv::Mat& H_star2);
 
-    /**
-     * @brief Computes a custom histogram of the given data.
-     * @param data The data to compute the histogram for.
-     * @param binEdges The edges of the bins in the histogram.
-     * @return The computed histogram.
-     */
-    cv::Mat computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges);
+    double distance2(const cv::Mat &H_star1, const cv::Mat &H_star2);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP
+/**
+ * This work is based on the following paper:
+ * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
+ * Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ *
+ * Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability
+ * to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+ *
+ */
 
