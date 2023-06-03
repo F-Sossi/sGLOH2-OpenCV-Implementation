@@ -42,6 +42,9 @@ public:
             inputImage = inputImage(roi);
         }
 
+        auto start = std::chrono::high_resolution_clock::now();
+        int imageCount = 1;
+
         // Initialize SIFT descriptor
         cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
 
@@ -97,13 +100,18 @@ public:
                 matchesMap[imagePaths[i]] = good_matches;
 
                 // Print progress
-                std::cout << "Processed " << range.end - range.start << " images" << std::endl;
+                std::cout << "Processed image: " << imageCount << std::endl;
+                imageCount++;
             }
 
         });
 
         // Print exit for loop
         std::cout << "Finished processing images" << std::endl;
+        // end timer
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "sGLOH2 descriptor took " << elapsed.count() << " seconds" << std::endl;
 
         // Draw matches between input image and top three images
         std::vector<cv::Mat> topImages;

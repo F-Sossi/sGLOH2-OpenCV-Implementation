@@ -34,6 +34,7 @@
 #include <queue>
 #include <limits>
 #include <mutex>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
@@ -75,6 +76,9 @@ public:
             // Only keep the part of the image within the ROI
             inputImage = inputImage(roi);
         }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        int imageCount = 1;
 
         // Initialize sGLOH2 descriptor
         sGLOH2 sgloh2;
@@ -152,13 +156,18 @@ public:
                 matchesMap[imagePaths[i]] = matches_sgloh2;
 
                 // Print progress
-                std::cout << "Processed " << range.end - range.start << " images" << std::endl;
+                std::cout << "Processed image: " << imageCount << std::endl;
+                imageCount++;
             }
         });
 
 
         //print exit for loop
         std::cout << "Finished processing images" << std::endl;
+        // end timer
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "sGLOH2 descriptor took " << elapsed.count() << " seconds" << std::endl;
 
         // Draw matches between input image and top images
         std::vector<cv::Mat> topImages;

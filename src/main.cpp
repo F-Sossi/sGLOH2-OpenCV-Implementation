@@ -22,7 +22,6 @@
  */
 #include "ImageComparatorSgloh.hpp"
 #include "ImageComparatorSift.hpp"
-#include <chrono>
 
 int main(int argc, char** argv) {
 
@@ -35,33 +34,17 @@ int main(int argc, char** argv) {
         folderPath = argv[2];
         skipInputs = true;
     } else {
-        imageInputPath = "../src_img/toucan.png";
+        imageInputPath = "../src_img/bear.png";
         folderPath = "../images";
     }
 
-    // Time the execution of the sGLOH2 descriptor
-    // begin timer
-    auto start = std::chrono::high_resolution_clock::now();
-
+    // Run sGLOH2 descriptor
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison(skipInputs);
 
-    // end timer
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "sGLOH2 descriptor took " << elapsed.count() << " seconds" << std::endl;
-
-    // Time the execution of the SIFT descriptor
-    // begin timer
-    auto start2 = std::chrono::high_resolution_clock::now();
-
+    // Run SIFT descriptor
     ImageComparatorSift comparatorSift(imageInputPath, folderPath);
     comparatorSift.runComparison(skipInputs);
-
-    // end timer
-    auto finish2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed2 = finish2 - start2;
-    std::cout << "SIFT descriptor took " << elapsed2.count() << " seconds" << std::endl;
 
     !skipInputs && cv::waitKey(0);
 
