@@ -4,12 +4,16 @@ import subprocess
 executable_path = 'C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\cmake-build-debug-visual-studio\\sGLOH_opencv.exe'
 
 # Set command line arguments
-imageInputPath = "C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\src_img\\toucan.png"
+imageInputPath = "C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\src_img\\cabin.jpg"
 folderPath = "C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\images"
 args = [imageInputPath, folderPath]
 
-# Run the executable and capture its output
-result = subprocess.run([executable_path] + args, stdout=subprocess.PIPE)
+# Open the output file in write mode
+with open('output.txt', 'w') as f:
+    # Run the program 10 times
+    for i in range(5):
+        # Run the executable and redirect its output to the file
+        subprocess.run([executable_path] + args, stdout=f)
 
-# Print the output
-print(result.stdout.decode('utf-8'))
+        # Write a newline character to separate the output from each run
+        f.write('\n')
