@@ -1,6 +1,7 @@
 #ifndef SIFT_OPENCV_IMAGECOMPARATORSIFT_HPP
 #define SIFT_OPENCV_IMAGECOMPARATORSIFT_HPP
 
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <filesystem>
@@ -11,6 +12,12 @@
 #include <mutex>
 
 namespace fs = std::filesystem;
+
+// Number of images to match
+constexpr int NUM_MATCHES = 5;
+
+// Max distance between keypoints to be considered a match
+constexpr double MAX_DISTANCE = 0.4;
 
 class ImageComparatorSift {
 public:
@@ -26,6 +33,17 @@ public:
             std::cerr << "Error: Failed to load image: " << inputImagePath_ << std::endl;
             return;
         }
+
+        if(!suppressInput) {
+            // Select a ROI from the input image
+            cv::Rect roi = selectROI(inputImage);
+
+            // Only keep the part of the image within the ROI
+            inputImage = inputImage(roi);
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        int imageCount = 1;
 
         // Initialize SIFT descriptor
         cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
@@ -62,7 +80,8 @@ public:
 
                 // Filter out good matches based on their distance
                 std::vector<cv::DMatch> good_matches;
-                double max_distance = 0.4; // We can adjust this value to find a good threshold for our dataset
+                double max_distance = MAX_DISTANCE;
+
                 for (const auto& match : matches) {
                     if (match.distance <= max_distance) {
                         good_matches.push_back(match);
@@ -89,34 +108,58 @@ public:
 
         // Print exit for loop
         std::cout << "Finished processing images" << std::endl;
+        // end timer
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "sGLOH2 descriptor took " << elapsed.count() << " seconds" << std::endl;
 
         // Draw matches between input image and top three images
         std::vector<cv::Mat> topImages;
         std::vector<std::vector<cv::DMatch>> topMatches;
         std::vector<std::vector<cv::KeyPoint>> topKeypoints;
 
-        for (int i = 0; i < 5 && !mostMatches.empty(); ++i) {
+        for (int i = 0; i < NUM_MATCHES && !mostMatches.empty(); ++i) {
             const auto& top = mostMatches.top();
             topImages.push_back(cv::imread(top.path, cv::IMREAD_GRAYSCALE));
             topMatches.push_back(matchesMap[top.path]);
             topKeypoints.push_back(keypointsMap[top.path]);
             mostMatches.pop();
         }
-        if(!suppressInput) {
-            for (size_t i = 0; i < topImages.size(); ++i) {
-                cv::Mat imgMatches;
-                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-                // Create a unique window name for each match
-                std::string windowName = "Match " + std::to_string(i + 1);
-                cv::imshow(windowName, imgMatches);
-            }
-            cv::waitKey(0);
+        for (size_t i = 0; i < topImages.size(); ++i) {
+            cv::Mat imgMatches;
+            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
+
+            // Create a unique window name for each match
+            std::string windowName = "Match " + std::to_string(i + 1);
+            cv::imshow(windowName, imgMatches);
         }
+        cv::waitKey(0);
+
 
     }
 
 private:
+
+    /**
+     * @brief Selects a Region of Interest (ROI) from the input image.
+     * @param image The input image.
+     * @return The selected ROI.
+     */
+    cv::Rect selectROI(const cv::Mat& image) {
+        // Display the image and wait for a rectangle selection
+        cv::Rect roi = cv::selectROI("Select ROI", image);
+
+        // Destroy the "Select ROI" window
+        cv::destroyWindow("Select ROI");
+
+        return roi;
+    };
+
+    /**
+     * @struct ImageMatches
+     * @brief This struct is used to store the image path and the count of matches.
+     */
     struct ImageMatches {
         std::string path;
         size_t count;
