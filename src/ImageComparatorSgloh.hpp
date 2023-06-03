@@ -134,6 +134,7 @@ public:
                     matches_sgloh2.insert(matches_sgloh2.end(), matches_sgloh2_local.begin(), matches_sgloh2_local.end());
                 });
 
+
                 // Filter out good matches based on their distance
                 std::vector<cv::DMatch> good_matches_sgloh2;
                 float max_distance = MAX_DISTANCE_SGLOH;
