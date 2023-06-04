@@ -33,7 +33,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
-#include <fstream>
 
 // Only use odd sizes for the patch size (circular region of interest)
 // good sizes 31, 41, 51, 61, 71, 81, 91, 101, 111, 121 etc.
@@ -65,7 +64,7 @@ constexpr int ROTATE_THRESHOLD = 2;
  *       constructor is that it only needs to be done once when an object of the sGLOH2
  *       class is created, and not every time when the compute method is called.
  */
-sGLOH2::sGLOH2(int m) : m(m) {
+sGLOH2::sGLOH2(){
     int patchSize = PATCH_SIZE;
     int radius = patchSize / 2;
 
@@ -142,8 +141,14 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
 
     // Parallel loop across all keypoints
     cv::parallel_for_(cv::Range(0, keypoints.size()), [&](const cv::Range& range) {
+
+        // Create a vector to store the local descriptors
         std::vector<cv::Mat> descriptors_local;
+
+        // Loop across all keypoints
         for (int r = range.start; r < range.end; r++) {
+
+            // Get the patch around the keypoint
             auto& keypoint = keypoints[r];
             cv::Point2f topLeft(keypoint.pt.x - patchSize / 2, keypoint.pt.y - patchSize / 2);
             cv::Mat patch = image(cv::Rect(topLeft.x, topLeft.y, patchSize, patchSize));
