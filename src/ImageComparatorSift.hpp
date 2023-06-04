@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 
 // Number of images to match
-constexpr int NUM_MATCHES = 5;
+constexpr int NUM_MATCHES = 10;
 
 // Max distance between keypoints to be considered a match
 constexpr double MAX_DISTANCE = 0.4;
@@ -100,7 +100,7 @@ public:
                 matchesMap[imagePaths[i]] = good_matches;
 
                 // Print progress
-                std::cout << "Processed image: " << imageCount << std::endl;
+                !suppressInput && std::cout << "Processed image: " << imageCount << std::endl;
                 imageCount++;
             }
 
@@ -123,18 +123,22 @@ public:
             topImages.push_back(cv::imread(top.path, cv::IMREAD_GRAYSCALE));
             topMatches.push_back(matchesMap[top.path]);
             topKeypoints.push_back(keypointsMap[top.path]);
+            // Print the path and number of matches
+            std::cout << top.path << " " << top.count << std::endl;
             mostMatches.pop();
         }
+        // Don't display images in testing mode
+        if(!suppressInput) {
+            for (size_t i = 0; i < topImages.size(); ++i) {
+                cv::Mat imgMatches;
+                cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
 
-        for (size_t i = 0; i < topImages.size(); ++i) {
-            cv::Mat imgMatches;
-            cv::drawMatches(inputImage, inputKeyPoints, topImages[i], topKeypoints[i], topMatches[i], imgMatches);
-
-            // Create a unique window name for each match
-            std::string windowName = "Match " + std::to_string(i + 1);
-            cv::imshow(windowName, imgMatches);
+                // Create a unique window name for each match
+                std::string windowName = "Match " + std::to_string(i + 1);
+                cv::imshow(windowName, imgMatches);
+            }
+            cv::waitKey(0);
         }
-        cv::waitKey(0);
 
 
     }

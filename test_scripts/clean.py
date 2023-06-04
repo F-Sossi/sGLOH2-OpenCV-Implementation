@@ -15,10 +15,11 @@ with open(sys.argv[1], 'r+') as f:
     lines = [line for line in lines if not line.startswith('[')]
     # Remove any lines "Finished processing images"
     lines = [line for line in lines if not line.startswith('Finished processing images')]
-    # If the line starts with "Match" Remove the file path starting from
+    # Remove any lines that start with "Processed image"
+    lines = [line for line in lines if not line.startswith('Processed image')]
     # C: leaving only the file name and the match score
     lines = [line.replace('C:\\Users\\Justin\\CLionProjects\\sGLOH_opencv\\images\\', '') for line in lines]
-    # If the line is "SIFT descriptor took 47.8754 seconds" add an empty line
+    # If it is the last line in a test add an empty line
     lines = [line if not line.startswith('SIFT descriptor took') else line + '\n' for line in lines]
     # Close the file in read mode and open in write mode
     f.close()

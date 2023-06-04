@@ -37,7 +37,9 @@ int main(int argc, char** argv) {
         imageInputPath = "../src_img/toucan.png";
         folderPath = "../images";
     }
-
+    if(skipInputs){
+        std::cout << "Testing: " << imageInputPath << "\n" << std::endl;
+    }
     // Run sGLOH2 descriptor
     ImageComparatorSgloh comparator(imageInputPath, folderPath);
     comparator.runComparison(skipInputs);
