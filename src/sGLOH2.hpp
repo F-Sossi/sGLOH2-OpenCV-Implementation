@@ -9,7 +9,7 @@
  * for computing the sGLOH2 descriptor for a given image patch.
  *
  * Implemented functions:
- * sGLOH2::sGLOH2(int m = 8)
+ * sGLOH2::sGLOH2(int m = 4)
  * void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
  * cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch)
  * double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2)
@@ -38,8 +38,7 @@
  */
 class sGLOH2 {
 private:
-    int m;  ///< discretization of the rotation
-    cv::Mat H1, H2;
+    //int m;  ///< discretization of the rotation
     std::vector<std::vector<cv::Mat>> region_masks;
 
     /**
@@ -77,9 +76,9 @@ public:
 
     /**
      * @brief Constructs an sGLOH2 object.
-     * @param m The number of bins. Default is 8.
+     * @param m The number of bins. Default is 4.
      */
-    explicit sGLOH2(int m = 4);
+    explicit sGLOH2();
 
     /**
      * @brief Computes the sGLOH2 descriptors for the keypoints in the given image.

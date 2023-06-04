@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
         folderPath = argv[2];
         skipInputs = true;
     } else {
-        imageInputPath = "../src_img/bombay.jpg";
+        imageInputPath = "../src_img/toucan.png";
         folderPath = "../images";
     }
 
