@@ -39,7 +39,7 @@
 namespace fs = std::filesystem;
 
 // Number of images to match
-constexpr int NUM_MATCHES_SGLOH = 5;
+constexpr int NUM_MATCHES_SGLOH = 10;
 
 // Max distance between keypoints to be considered a match
 constexpr double MAX_DISTANCE_SGLOH = 0.4;

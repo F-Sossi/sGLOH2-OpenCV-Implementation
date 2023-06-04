@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 
 // Number of images to match
-constexpr int NUM_MATCHES = 5;
+constexpr int NUM_MATCHES = 10;
 
 // Max distance between keypoints to be considered a match
 constexpr double MAX_DISTANCE = 0.4;
@@ -100,7 +100,7 @@ public:
                 matchesMap[imagePaths[i]] = good_matches;
 
                 // Print progress
-                std::cout << "Processed image: " << imageCount << std::endl;
+                !suppressInput && std::cout << "Processed image: " << imageCount << std::endl;
                 imageCount++;
             }
 
@@ -111,7 +111,7 @@ public:
         // end timer
         auto finish = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = finish - start;
-        std::cout << "sGLOH2 descriptor took " << elapsed.count() << " seconds" << std::endl;
+        std::cout << "SIFT descriptor took " << elapsed.count() << " seconds" << std::endl;
 
         // Draw matches between input image and top three images
         std::vector<cv::Mat> topImages;

@@ -1,0 +1,235 @@
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\beagle.jpg
+sGLOH2 descriptor took 469.225 seconds
+beagle_109.jpg 480
+IMG_1821.JPG 478
+IMG_20190128_115543.jpg 475
+Bombay_123.jpg 474
+20230513_212518.jpg 473
+Bombay_129.jpg 473
+Bombay_133.jpg 472
+Bombay_132.jpg 472
+yorkshire_terrier_30.jpg 472
+Bombay_119.jpg 472
+
+SIFT descriptor took 69.4142 seconds
+Bombay_120.jpg 0
+428_r170.png 0
+Bombay_121.jpg 0
+yorkshire_terrier_30.jpg 0
+683_r265.png 0
+144_r45.png 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\bear.png
+sGLOH2 descriptor took 470.772 seconds
+1_r60.png 474
+1_r65.png 467
+1_r75.png 462
+1_r70.png 459
+1_r80.png 454
+1_r85.png 444
+1_r100.png 440
+Bombay_129.jpg 440
+IMG_1821.JPG 439
+1_r90.png 436
+
+SIFT descriptor took 55.3943 seconds
+Bombay_120.jpg 0
+Bombay_121.jpg 0
+1_r100.png 0
+683_r245.png 0
+wheaten_terrier_165.jpg 0
+144_r40.png 0
+IMG_20200509_095443.jpg 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\bombay.jpg
+sGLOH2 descriptor took 471.997 seconds
+BombasGloh y_128.jpg 455
+1_r60.png 453
+IMG_1821.JPG 452
+Bombay_130.jpg 448
+1_r75.png 448
+Bombay_129.jpg 447
+1_r65.png 447
+Bombay_123.jpg 446
+20230419_221134.jpg 445
+Bombay_132.jpg 444
+
+SIFT descriptor took 92.4982 seconds
+Bombay_120.jpg 0
+1_r90.png 0
+Bombay_130.jpg 0
+1_r65.png 0
+1_r85.png 0
+144_r45.png 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\brush.png
+sGLOH2 descriptor took 392.437 seconds
+428_r155.png 316
+428_r160.png 301
+1_r85.png 283
+428_r165.png 282
+1_r100.png 277
+1_r80.png 276
+1_r90.png 275
+IMG_1821.JPG 271
+428_r170.png 270
+Bombay_132.jpg 266
+
+SIFT descriptor took 51.0896 seconds
+Bombay_120.jpg 0
+Bombay_130.jpg 0
+Abyssinian_206.jpg 0
+1_r65.png 0
+Bombay_133.jpg 0
+144_r25.png 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\cabin.jpg
+sGLOH2 descriptor took 457.876 seconds
+cabin0.jpg 500
+cabin180.jpg 494
+Bombay_128.jpg 494
+Bombay_129.jpg 487
+cabinf180.jpg 485
+20230513_212518.jpg 484
+Bombay_123.jpg 483
+20230419_221134.jpg 481
+Bombay_125.jpg 480
+Bombay_130.jpg 480
+
+SIFT descriptor took 147.727 seconds
+cabin0.jpg 2291
+cabin180.jpg 223
+Bombay_120.jpg 0
+1_r100.png 0
+wheaten_terrier_165.jpg 0
+wheaten_terrier_186.jpg 0
+20230513_212528.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\cat.jpg
+sGLOH2 descriptor took 378.614 seconds
+Abyssinian_206.jpg 371
+1_r100.png 371
+DSCN8064.JPG 371
+Bombay_123.jpg 371
+683_r260.png 371
+1_r80.png 371
+Bombay_125.jpg 371
+IMG_20190128_115543.jpg 371
+1_r75.png 371
+yorkshire_terrier_31.jpg 371
+
+SIFT descriptor took 66.3555 seconds
+Bombay_120.jpg 0
+1_r90.png 0
+Bombay_121.jpg 0
+683_r245.png 0
+683_r265.png 0
+144_r45.png 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\jar.png
+sGLOH2 descriptor took 392.09 seconds
+144_r20.png 192
+144_r25.png 167
+144_r30.png 145
+144_r40.png 125
+144_r35.png 118
+IMG_1821.JPG 116
+144_r45.png 116
+Bombay_128.jpg 111
+Bombay_130.jpg 111
+Bombay_129.jpg 105
+
+SIFT descriptor took 52.4561 seconds
+Bombay_120.jpg 0
+Bombay_130.jpg 0
+1_r100.png 0
+683_r245.png 0
+wheaten_terrier_186.jpg 0
+144_r40.png 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\toucan.png
+sGLOH2 descriptor took 429.677 seconds
+683_r245.png 362
+683_r250.png 350
+683_r255.png 327
+1_r65.png 326
+683_r260.png 323
+1_r60.png 323
+683_r265.png 323
+1_r85.png 319
+1_r70.png 317
+1_r95.png 315
+
+SIFT descriptor took 51.7791 seconds
+Bombay_120.jpg 0
+Bombay_121.jpg 0
+1_r90.png 0
+683_r245.png 0
+1_r80.png 0
+20131102_094851.jpg 0
+IMG_20200509_095443.jpg 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_1821.JPG 0
+
+Testing: C:\Users\Justin\CLionProjects\sGLOH_opencv\src_img\waterfall.JPG
+sGLOH2 descriptor took 482.576 seconds
+IMG_1821.JPG 494
+Bombay_132.jpg 492
+Bombay_123.jpg 491
+Bombay_129.jpg 489
+Bombay_133.jpg 488
+IMG_20200509_095443.jpg 488
+yorkshire_terrier_7.jpg 487
+20230419_221134.jpg 486
+Bombay_128.jpg 485
+1_r70.png 485
+
+SIFT descriptor took 191.023 seconds
+Bombay_120.jpg 0
+1_r100.png 0
+Bombay_121.jpg 0
+683_r250.png 0
+Bombay_128.jpg 0
+20230513_212528.jpg 0
+20220322_141316.jpg 0
+20210530_111655.jpg 0
+IMG_20200509_095443.jpg 0
+IMG_1821.JPG 0
+
+Testing: beagle.jpg
+Testing: bear.png
+Testing: bombay.jpg
+Testing: brush.png
+Testing: cabin.jpg
+Testing: cat.jpg
+Testing: jar.png
+Testing: toucan.png
+Testing: waterfall.JPG
+
