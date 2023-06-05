@@ -70,9 +70,12 @@ Please note that these instructions assume you're using a Unix-like operating sy
 
  This work is based on the following paper:
  
- Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern Analysis and Machine Intelligence 40.4 (2017): 931-944.
+ Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern Analysis and Machine Intelligence 40.4 (2017): 931-944. 
+ [Rethinking the sGLOH descriptor](https://ieeexplore.ieee.org/abstract/document/7911291?casa_token=cPjrrbMCyMEAAAAA:y7ygHc5iHk5N01iA9LYfI_DGw7Y2smUGPRA4fLjWmHsUotf5mr3KL-OS1igD03gTqZlvTYpS)
+
  
  Bellavia, Fabio, Domenico Tegolo, and Emanuele Trucco. "Improving SIFT-based descriptors stability to rotations." 2010 20th International Conference on Pattern Recognition. IEEE, 2010.
+[Improving SIFT-based descriptors stability to rotations](https://ieeexplore.ieee.org/abstract/document/5597547?casa_token=v7UJgCRktggAAAAA:FtfCL8Fr0UTIOseEbSiePHaIYakTIHQgPGZygFYYPXw5Xo-2KjrvKnwiMkAGR_2BTsmrQSY5)
 
 Links: 
 View Paper: https://www.overleaf.com/read/hmkghydpbrnm
