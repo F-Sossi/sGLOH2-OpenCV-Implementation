@@ -29,7 +29,7 @@ Here's how you can do it:
 
 The updated line should look something like this:
 
-\```cmake
+```cmake
 set(CMAKE_TOOLCHAIN_FILE "/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 \```
 
@@ -42,28 +42,28 @@ After updating the CMakeLists.txt file, you can proceed with the project as usua
 1. Open a terminal in the project directory.
 2. Create a new directory for the build files:
 
-\```bash
+```bash
 mkdir build
 cd build
 \```
 
 3. Run CMake to generate the build files:
 
-\```bash
+```bash
 cmake ..
-\```
+```
 
 4. Build the project:
 
-\```bash
+```bash
 make
-\```
+```
 
 This will create an executable named `sGLOH_opencv` in the build directory. You can run it with:
 
-\```bash
+```bash
 ./sGLOH_opencv
-\```
+```
 
 Please note that these instructions assume you're using a Unix-like operating system. If you're using Windows, the commands might be slightly different.
 
