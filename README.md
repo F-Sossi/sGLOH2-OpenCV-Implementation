@@ -31,7 +31,7 @@ The updated line should look something like this:
 
 ```cmake
 set(CMAKE_TOOLCHAIN_FILE "/path/to/your/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-\```
+```
 
 Replace "/path/to/your/vcpkg" with the actual path to your vcpkg installation.
 
@@ -45,7 +45,7 @@ After updating the CMakeLists.txt file, you can proceed with the project as usua
 ```bash
 mkdir build
 cd build
-\```
+```
 
 3. Run CMake to generate the build files:
 
