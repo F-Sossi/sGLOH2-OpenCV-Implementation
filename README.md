@@ -13,6 +13,9 @@ This project requires OpenCV 4.0 with the contributors package installed to be i
 1. OpenCV is installed on your main system.
 2. OpenCV is installed using vcpkg.
 
+[Install OpenCV from source](https://docs.opencv.org/4.x/d7/d9f/tutorial_linux_install.html)
+[Install OPenCV vcpkg](https://vcpkg.io/en/)
+
 ### If OpenCV is installed on your main system:
 
 You can proceed with the project as is. The CMakeLists.txt file is already set up to find your OpenCV installation.
