@@ -8,7 +8,7 @@ Demo Video:  https://www.youtube.com/watch?v=DWoCIwm22bk
 
 ## Installation
 
-This project requires OpenCV to be installed on your system. There are two possible scenarios:
+This project requires OpenCV 4.0 with the contributors package installed to be installed on your system. There are two possible scenarios:
 
 1. OpenCV is installed on your main system.
 2. OpenCV is installed using vcpkg.
