@@ -9,15 +9,13 @@
  * for computing the sGLOH2 descriptor for a given image patch.
  *
  * Implemented functions:
- * sGLOH2::sGLOH2(int m = 8)
+ * sGLOH2::sGLOH2(int m = 4)
  * void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
  * cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch)
  * double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2)
  * cv::Mat sGLOH2::cyclicShift(const cv::Mat &descriptor, int k)
  * cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat &patch)
- * cv::Mat sGLOH2::computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges)
- * cv::Mat sGLOH2::computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m)
- * double sGLOH2::cosine_similarity(const cv::Mat &H1, const cv::Mat &H2)
+ * cv::Mat sGLOH2::computeHistogram(const cv::Mat &patch, const cv::Mat &mask)
  *
  * This work is based on the following paper:
  * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
@@ -187,7 +185,7 @@ void sGLOH2::compute(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
  * The descriptor is then normalized to ensure scale invariance.
  *
  * @param patch The image patch for which the sGLOH descriptor is to be computed. It must be a grayscale image.
- * @return The computed sGLOH descriptor as a single-row matrix of type CV_32F. The number of columns equals Q * N * M,
+ * @return The computed sGLOH descriptor as a single-row matrix of type CV_32F. The number of columns equals M * N * M,
  *         where Q is the number of quantization levels, N is the number of rings, and M is the number of sectors.
  */
 cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
@@ -270,8 +268,6 @@ cv::Mat sGLOH2::compute_sGLOH(const cv::Mat& patch) {
  * and for each region, a gradient orientation histogram is computed. This process is
  * then repeated for rotated versions of the patch, covering 2*M angles of rotation.
  * The histograms of all regions across all rotations are concatenated to form the final descriptor.
- *
- * The descriptor is then normalized to ensure scale invariance.
  *
  * @param patch The image patch for which the sGLOH2 descriptor is to be computed. It must be a grayscale image.
  * @return The computed sGLOH2 descriptor as a single-row matrix of type CV_32F. The number of columns is proportional
