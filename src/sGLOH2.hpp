@@ -15,9 +15,7 @@
  * double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2)
  * cv::Mat sGLOH2::cyclicShift(const cv::Mat &descriptor, int k)
  * cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat &patch)
- * cv::Mat sGLOH2::computeCustomHistogram(const cv::Mat &data, const std::vector<float> &binEdges)
  * cv::Mat sGLOH2::computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m)
- * double sGLOH2::cosine_similarity(const cv::Mat &H1, const cv::Mat &H2)
  *
  * This work is based on the following paper:
  * Bellavia, Fabio, and Carlo Colombo. "Rethinking the sGLOH descriptor." IEEE Transactions on Pattern
