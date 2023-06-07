@@ -63,7 +63,7 @@ private:
      * @param m The number of bins in the histogram.
      * @return The computed histogram.
      */
-    cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask, int m);
+    cv::Mat computeHistogram(const cv::Mat &patch, const cv::Mat &mask);
 
     /**
      * @brief Computes the sGLOH descriptor for the given patch.
@@ -96,7 +96,6 @@ public:
      */
     static double distance(const cv::Mat& H_star1, const cv::Mat& H_star2);
 
-    double distance2(const cv::Mat &H_star1, const cv::Mat &H_star2);
 };
 
 #endif //SGLOH_OPENCV_SGLOH2_HPP

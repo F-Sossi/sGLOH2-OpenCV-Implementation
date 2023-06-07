@@ -201,7 +201,7 @@ cv::Mat sGLOH2::compute_sGLOH_single(const cv::Mat& patch) {
             cv::Mat region_mask = region_masks[ring][sector];
 
             // Compute the histogram for the region.
-            cv::Mat histogramMat = computeHistogram(patch, region_mask, M);
+            cv::Mat histogramMat = computeHistogram(patch, region_mask);
 
             // Place the histogram to the descriptor at the correct position.
             int start = (ring * M + sector) * M;
@@ -313,7 +313,7 @@ double sGLOH2::distance(const cv::Mat& H_star1, const cv::Mat& H_star2) {
  *
  * This method applies a cyclic shift of k positions to each block of a sGLOH2 descriptor.
  * The blocks correspond to the m*m regions of the original image patch. The descriptor is
- * divided into 2*M blocks along the column dimension, as it's a concatenation of two sGLOH descriptors.
+ * divided into 4*M blocks along the column dimension, as it's a concatenation of two sGLOH descriptors.
  * The shift is performed in-place on each block (converted to a vector for easy rotation),
  * and the modified descriptor is returned.
  *
@@ -326,7 +326,7 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
     cv::Mat shifted_descriptor = descriptor.clone();
 
     // Compute the size of the blocks. Each block corresponds to a region of the image.
-    int block_size = 16; //Q * N * M / (2*M); // currently 4
+    int block_size = 4 * M;
 
     // Yes this is pointless for loop, but I wanted to preserve the ability to rotate in different ways
     for (int i = 0; i < 1; ++i) {
@@ -362,7 +362,7 @@ cv::Mat sGLOH2::cyclicShift(const cv::Mat& descriptor, int k) {
  * @param m The number of bins in the histogram.
  * @return The gradient orientation histogram as a single-row matrix of type CV_32F. The number of columns is equal to the number of histogram bins (m).
  */
-cv::Mat sGLOH2::computeHistogram(const cv::Mat& patch, const cv::Mat& mask, int m) {
+cv::Mat sGLOH2::computeHistogram(const cv::Mat& patch, const cv::Mat& mask) {
     // Compute the gradient of the region.
     cv::Mat grad_x, grad_y;
     cv::Sobel(patch, grad_x, CV_32F, 1, 0, 3);
@@ -376,13 +376,13 @@ cv::Mat sGLOH2::computeHistogram(const cv::Mat& patch, const cv::Mat& mask, int 
     orientation = orientation * 180.0 / CV_PI;
 
     // Initialize histogram
-    cv::Mat histogram = cv::Mat::zeros(1, m, CV_32F);
+    cv::Mat histogram = cv::Mat::zeros(1, M, CV_32F);
 
     // Compute weighted histogram manually
     for (int i = 0; i < orientation.rows; ++i) {
         for (int j = 0; j < orientation.cols; ++j) {
             if (mask.at<uchar>(i, j)) {
-                int bin = cvRound(orientation.at<float>(i, j) / 360.0 * m) % m;
+                int bin = cvRound(orientation.at<float>(i, j) / 360.0 * M) % M;
                 histogram.at<float>(0, bin) += magnitude.at<float>(i, j);
             }
         }
