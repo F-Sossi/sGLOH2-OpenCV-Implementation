@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 constexpr int NUM_MATCHES = 10;
 
 // Max distance between keypoints to be considered a match
-constexpr double MAX_DISTANCE = 0.4;
+constexpr double MAX_DISTANCE = 4.0;
 
 class ImageComparatorSift {
 public:
