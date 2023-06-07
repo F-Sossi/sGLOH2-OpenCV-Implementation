@@ -2,6 +2,8 @@
 
 For this project the objective is to incorporate the sGLOH (scale-invariant Gradient Location and Orientation Histogram) descriptor into the OpenCV environment, employing C++ as our coding language. This project will implement and evaluate the sGLOH descriptor and its performance compared to SIFT (Scale-Invariant Feature Transform) approach, which constitutes our benchmark for assessment.
 
+The Report covering the details of this project is in the main repository titled [CSS587_Computer_Vision_Project_sGLOH2](https://github.com/F-Sossi/sGLOH2-OpenCV-Implementation/blob/master/CSS587_Computer_Vision_Project_sGLOH2.pdf)
+
 Demo Video:  https://www.youtube.com/watch?v=DWoCIwm22bk
 
 # sGLOH_opencv
