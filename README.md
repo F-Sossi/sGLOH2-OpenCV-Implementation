@@ -6,8 +6,6 @@ The Report covering the details of this project is in the main repository titled
 
 Demo Video:  https://www.youtube.com/watch?v=DWoCIwm22bk
 
-# sGLOH_opencv
-
 ## Installation
 
 This project requires OpenCV 4.0 with the contributors package installed to be installed on your system. There are two possible scenarios:
